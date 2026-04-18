@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SM-2 Revisão</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f3d;
+    --text: #e8eaf2;
+    --text-muted: #6b7191;
+    --text-dim: #3d4260;
+    --green: #2ecc8a;
+    --green-bg: #0d2b1e;
+    --green-border: #1a4d35;
+    --red: #ff5f6d;
+    --red-bg: #2b0d12;
+    --red-border: #4d1a1f;
+    --accent: #7c8cf8;
+    --accent-dim: #2a2f55;
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+
+  /* ── TELAS ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: env(safe-area-inset-top, 16px) 20px env(safe-area-inset-bottom, 16px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ── TELA DE CONFIG ── */
+  #screen-config {
+    justify-content: center;
+    gap: 28px;
+    padding-top: 48px;
+  }
+  .config-logo {
+    text-align: center;
+  }
+  .config-logo h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .config-logo p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  .config-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .config-card label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .config-card input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .config-card input:focus {
+    border-color: var(--accent);
+  }
+  .config-card input::placeholder {
+    color: var(--text-dim);
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    background: var(--accent-dim);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+  }
+  .hint strong { color: var(--accent); font-weight: 600; }
+
+  /* ── BOTÕES ── */
+  .btn {
+    border: none;
+    border-radius: var(--radius);
+    padding: 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .15s, opacity .15s;
+    width: 100%;
+  }
+  .btn:active { transform: scale(0.97); opacity: .85; }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    padding: 14px;
+  }
+
+  /* ── TELA DE LOADING ── */
+  #screen-loading {
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+  }
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #screen-loading p {
+    color: var(--text-muted);
+    font-size: 15px;
+  }
+
+  /* ── TELA VAZIA ── */
+  #screen-empty {
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 64px; }
+  #screen-empty h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+  }
+  #screen-empty p {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+
+  /* ── TELA DE REVISÃO ── */
+  #screen-review {
+    gap: 0;
+    padding-bottom: 0;
+  }
+
+  /* Header */
+  .review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 20px;
+    flex-shrink: 0;
+  }
+  .review-counter {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .review-counter span {
+    color: var(--text);
+  }
+  .review-theme {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 5px 12px;
+    border-radius: 20px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Barra de progresso */
+  .progress-bar {
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    flex-shrink: 0;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 2px;
+    transition: width .4s ease;
+  }
+
+  /* Card */
+  .card-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+    overflow: hidden;
+  }
+  .card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+    transition: transform .2s ease, opacity .2s ease;
+  }
+  .card.flip-out {
+    transform: translateX(-60px) rotate(-4deg);
+    opacity: 0;
+  }
+  .card.flip-in {
+    transform: translateX(60px) rotate(4deg);
+    opacity: 0;
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .card-text {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text);
+    font-weight: 400;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .card-ef {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .card-revisoes {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Botões de avaliação */
+  .eval-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 20px 0 max(20px, env(safe-area-inset-bottom));
+    flex-shrink: 0;
+  }
+  .btn-eval {
+    border: none;
+    border-radius: var(--radius);
+    padding: 22px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: transform .15s, filter .15s;
+  }
+  .btn-eval:active { transform: scale(0.95); }
+  .btn-eval .eval-icon { font-size: 26px; }
+  .btn-eval .eval-label { font-size: 14px; }
+  .btn-eval .eval-sub { font-size: 11px; opacity: .7; }
+
+  .btn-lembrei {
+    background: var(--green-bg);
+    border: 1.5px solid var(--green-border);
+    color: var(--green);
+  }
+  .btn-lembrei:active { filter: brightness(1.2); }
+
+  .btn-nao-lembrei {
+    background: var(--red-bg);
+    border: 1.5px solid var(--red-border);
+    color: var(--red);
+  }
+  .btn-nao-lembrei:active { filter: brightness(1.2); }
+
+  /* ── TELA DE RESUMO ── */
+  #screen-summary {
+    justify-content: center;
+    gap: 24px;
+    padding-top: 40px;
+  }
+  .summary-header {
+    text-align: center;
+  }
+  .summary-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+  }
+  .summary-header p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  .summary-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 40px;
+    line-height: 1;
+  }
+  .stat-number.green { color: var(--green); }
+  .stat-number.red { color: var(--red); }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+  .summary-pct {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+  .pct-bar-bg {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0 8px;
+  }
+  .pct-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), #00e0a0);
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .pct-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .pct-label strong { color: var(--text); font-size: 15px; }
+
+  .summary-syncing {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .sync-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+  .summary-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all .3s ease;
+    white-space: nowrap;
+    z-index: 100;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── ERRO ── */
+  .error-box {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--red);
+    line-height: 1.5;
+    display: none;
+  }
+  .error-box.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ══ TELA 1: CONFIGURAÇÃO ══ -->
+<div class="screen active" id="screen-config">
+  <div class="config-logo">
+    <h1>SM-2 Revisão</h1>
+    <p>Repetição espaçada inteligente</p>
+  </div>
+
+  <div class="config-card">
+    <label>URL do Apps Script</label>
+    <input type="url" id="input-url" placeholder="https://script.google.com/macros/s/..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="hint">
+      Cole aqui a <strong>URL do Web App</strong> gerado no Apps Script.<br>
+      Veja as instruções abaixo de como obter essa URL.
+    </div>
+    <div class="error-box" id="error-config">URL inválida. Verifique se copiou corretamente.</div>
+  </div>
+
+  <button class="btn btn-primary" onclick="salvarConfig()">Começar revisão →</button>
+  <button class="btn btn-ghost" onclick="mostrarInstrucoes()">Como configurar o Apps Script?</button>
+</div>
+
+<!-- ══ TELA 2: CARREGANDO ══ -->
+<div class="screen" id="screen-loading">
+  <div class="spinner"></div>
+  <p id="loading-msg">Carregando itens do dia…</p>
+</div>
+
+<!-- ══ TELA 3: SEM ITENS ══ -->
+<div class="screen" id="screen-empty">
+  <div class="empty-icon">🎉</div>
+  <h2>Dia livre!</h2>
+  <p>Nenhum item para revisar hoje. Volte amanhã ou adicione novos itens no Google Sheets.</p>
+  <button class="btn btn-ghost" style="margin-top:16px" onclick="irParaConfig()">Trocar configuração</button>
+</div>
+
+<!-- ══ TELA 4: REVISÃO ══ -->
+<div class="screen" id="screen-review">
+  <div class="review-header">
+    <div class="review-counter"><span id="counter-atual">1</span> de <span id="counter-total">0</span></div>
+    <div class="review-theme" id="review-theme">Tema</div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <div class="card-area">
+    <div class="card" id="card">
+      <div class="card-label">Item para revisar</div>
+      <div class="card-text" id="card-text">Carregando...</div>
+      <div class="card-meta">
+        <span class="card-ef" id="card-ef"></span>
+        <span class="card-revisoes" id="card-revisoes"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="eval-buttons">
+    <button class="btn-eval btn-nao-lembrei" onclick="avaliar('nao')">
+      <span class="eval-icon">✕</span>
+      <span class="eval-label">Não lembrei</span>
+      <span class="eval-sub">Volta amanhã</span>
+    </button>
+    <button class="btn-eval btn-lembrei" onclick="avaliar('sim')">
+      <span class="eval-icon">✓</span>
+      <span class="eval-label">Lembrei</span>
+      <span class="eval-sub">Intervalo aumenta</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══ TELA 5: RESUMO ══ -->
+<div class="screen" id="screen-summary">
+  <div class="summary-header">
+    <h2 id="summary-emoji">✅ Revisão concluída!</h2>
+    <p id="summary-data"></p>
+  </div>
+
+  <div class="summary-stats">
+    <div class="stat-card">
+      <div class="stat-number green" id="stat-lembrei">0</div>
+      <div class="stat-label">Lembrei</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number red" id="stat-nao">0</div>
+      <div class="stat-label">Não lembrei</div>
+    </div>
+  </div>
+
+  <div class="summary-pct">
+    <div class="pct-label">
+      <span>Aproveitamento</span>
+      <strong id="pct-valor">0%</strong>
+    </div>
+    <div class="pct-bar-bg">
+      <div class="pct-bar-fill" id="pct-bar" style="width:0%"></div>
+    </div>
+    <div class="pct-label">
+      <span id="pct-msg">—</span>
+    </div>
+  </div>
+
+  <div class="summary-syncing" id="sync-status">
+    <div class="sync-dot"></div>
+    <span>Sincronizando com Google Sheets…</span>
+  </div>
+
+  <div class="summary-actions">
+    <button class="btn btn-primary" onclick="novaRodada()">Revisar novamente hoje</button>
+    <button class="btn btn-ghost" onclick="irParaConfig()">Configurações</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════
+let APP_URL = 'https://script.google.com/macros/s/AKfycbzUpZUZJ5rcS-odqaSGbTIHwCzi-xJGgBgCsGR-Kq4kOta_iDD1pXpir8m2MDMoqQ1oRg/exec';
+let itens = [];
+let idx = 0;
+let resultados = [];
+
+// ═══════════════════════════════════════════
+// NAVEGAÇÃO ENTRE TELAS
+// ═══════════════════════════════════════════
+function mostrarTela(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+function salvarConfig() {
+  const url = document.getElementById('input-url').value.trim();
+  const err = document.getElementById('error-config');
+
+  if (!url.startsWith('https://script.google.com/macros/s/')) {
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+
+  APP_URL = url;
+  localStorage.setItem('sm2_url', url);
+  carregarItens();
+}
+
+function irParaConfig() {
+  mostrarTela('screen-config');
+  const url = localStorage.getItem('sm2_url') || '';
+  document.getElementById('input-url').value = url;
+}
+
+function mostrarInstrucoes() {
+  alert(
+    'COMO CONFIGURAR O APPS SCRIPT:\n\n' +
+    '1. Abra seu Google Sheets\n' +
+    '2. Extensões > Apps Script\n' +
+    '3. Cole o código do Apps Script (SM-2)\n' +
+    '4. Clique em "Implantar" > "Nova implantação"\n' +
+    '5. Tipo: App da Web\n' +
+    '6. Executar como: Você mesmo\n' +
+    '7. Quem tem acesso: Qualquer pessoa\n' +
+    '8. Clique em "Implantar"\n' +
+    '9. Copie a URL gerada e cole neste campo'
+  );
+}
+
+// ═══════════════════════════════════════════
+// CARREGAR ITENS DO DIA
+// ═══════════════════════════════════════════
+async function carregarItens() {
+  mostrarTela('screen-loading');
+  document.getElementById('loading-msg').textContent = 'Carregando itens do dia…';
+
+  try {
+    const res = await fetch(`${APP_URL}?action=getItens`, { method: 'GET' });
+    const data = await res.json();
+
+    if (!data.itens || data.itens.length === 0) {
+      mostrarTela('screen-empty');
+      return;
+    }
+
+    itens = data.itens;
+    idx = 0;
+    resultados = [];
+    iniciarRevisao();
+
+  } catch (e) {
+    alert('Erro ao conectar com o Apps Script.\n\nVerifique:\n• URL copiada corretamente\n• Permissões configuradas como "Qualquer pessoa"\n• Planilha tem itens com "Status = Ativo"');
+    mostrarTela('screen-config');
+  }
+}
+
+// ═══════════════════════════════════════════
+// REVISÃO
+// ═══════════════════════════════════════════
+function iniciarRevisao() {
+  mostrarTela('screen-review');
+  atualizarCard(false);
+}
+
+function atualizarCard(animar) {
+  const item = itens[idx];
+  const total = itens.length;
+
+  document.getElementById('counter-atual').textContent = idx + 1;
+  document.getElementById('counter-total').textContent = total;
+  document.getElementById('review-theme').textContent = item.tema || '—';
+  document.getElementById('progress-fill').style.width = ((idx / total) * 100) + '%';
+
+  const ef = parseFloat(item.ef) || 2.5;
+  const rev = parseInt(item.totalRevisoes) || 0;
+  document.getElementById('card-ef').textContent = `EF: ${ef.toFixed(1)}`;
+  document.getElementById('card-revisoes').textContent = rev === 0 ? 'Novo item' : `${rev}ª revisão`;
+
+  if (animar) {
+    const card = document.getElementById('card');
+    card.classList.add('flip-in');
+    setTimeout(() => {
+      document.getElementById('card-text').textContent = item.item;
+      card.classList.remove('flip-in');
+    }, 200);
+  } else {
+    document.getElementById('card-text').textContent = item.item;
+  }
+}
+
+function avaliar(resp) {
+  const item = itens[idx];
+  const card = document.getElementById('card');
+
+  resultados.push({ id: item.id, avaliacao: resp === 'sim' ? 'Lembrei' : 'Não lembrei' });
+
+  card.classList.add('flip-out');
+
+  setTimeout(() => {
+    card.classList.remove('flip-out');
+    idx++;
+    if (idx >= itens.length) {
+      mostrarResumo();
+    } else {
+      atualizarCard(true);
+    }
+  }, 200);
+}
+
+// ═══════════════════════════════════════════
+// RESUMO E SINCRONIZAÇÃO
+// ═══════════════════════════════════════════
+function mostrarResumo() {
+  mostrarTela('screen-summary');
+
+  const lembrei = resultados.filter(r => r.avaliacao === 'Lembrei').length;
+  const nao = resultados.filter(r => r.avaliacao === 'Não lembrei').length;
+  const total = resultados.length;
+  const pct = Math.round((lembrei / total) * 100);
+
+  document.getElementById('stat-lembrei').textContent = lembrei;
+  document.getElementById('stat-nao').textContent = nao;
+  document.getElementById('pct-valor').textContent = pct + '%';
+  document.getElementById('summary-data').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  // Mensagem motivacional
+  let emoji = '✅', msg = '';
+  if (pct >= 90) { emoji = '🔥'; msg = 'Excelente! Você está dominando o conteúdo.'; }
+  else if (pct >= 70) { emoji = '✅'; msg = 'Ótimo desempenho! Continue assim.'; }
+  else if (pct >= 50) { emoji = '💪'; msg = 'Bom esforço. Os itens difíceis voltarão em breve.'; }
+  else { emoji = '📚'; msg = 'Não desanime! A repetição vai consolidar o conteúdo.'; }
+
+  document.getElementById('summary-emoji').textContent = emoji + ' Revisão concluída!';
+  document.getElementById('pct-msg').textContent = msg;
+
+  // Anima barra depois de um tick
+  setTimeout(() => {
+    document.getElementById('pct-bar').style.width = pct + '%';
+  }, 100);
+
+  // Sincroniza com Sheets
+  sincronizar();
+}
+
+async function sincronizar() {
+  const syncEl = document.getElementById('sync-status');
+  syncEl.innerHTML = '<div class="sync-dot"></div><span>Sincronizando com Google Sheets…</span>';
+
+  try {
+    const res = await fetch(APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'processarAvaliacoes', resultados }),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      syncEl.innerHTML = '<span style="color:var(--green)">✓ Sincronizado com sucesso</span>';
+    } else {
+      syncEl.innerHTML = '<span style="color:var(--red)">⚠ Erro na sincronização. Tente novamente.</span>';
+    }
+  } catch (e) {
+    syncEl.innerHTML = '<span style="color:var(--red)">⚠ Sem conexão. Dados salvos localmente.</span>';
+    localStorage.setItem('sm2_pendente', JSON.stringify(resultados));
+  }
+}
+
+async function novaRodada() {
+  await carregarItens();
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+window.addEventListener('load', () => {
+  carregarItens();
+});
+</script>
+</body>
+</html>
