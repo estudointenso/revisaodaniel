@@ -36,6 +36,8 @@
     overflow: hidden;
     position: fixed;
     width: 100%;
+    /* ~100% font size increase: base de 16px → 20px */
+    font-size: 20px;
   }
 
   /* ── TELAS ── */
@@ -65,7 +67,7 @@
   }
   .config-logo h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 36px;
+    font-size: 56px;
     letter-spacing: -1px;
     background: linear-gradient(135deg, var(--accent), var(--green));
     -webkit-background-clip: text;
@@ -73,7 +75,7 @@
   }
   .config-logo p {
     color: var(--text-muted);
-    font-size: 14px;
+    font-size: 20px;
     margin-top: 6px;
   }
   .config-card {
@@ -86,7 +88,7 @@
     gap: 16px;
   }
   .config-card label {
-    font-size: 12px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -100,7 +102,7 @@
     padding: 14px 16px;
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
+    font-size: 18px;
     outline: none;
     transition: border-color .2s;
   }
@@ -111,7 +113,7 @@
     color: var(--text-dim);
   }
   .hint {
-    font-size: 12px;
+    font-size: 17px;
     color: var(--text-muted);
     line-height: 1.6;
     background: var(--accent-dim);
@@ -126,7 +128,7 @@
     border-radius: var(--radius);
     padding: 18px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
+    font-size: 22px;
     font-weight: 600;
     cursor: pointer;
     transition: transform .15s, opacity .15s;
@@ -141,7 +143,7 @@
     background: var(--surface2);
     color: var(--text-muted);
     border: 1px solid var(--border);
-    font-size: 14px;
+    font-size: 19px;
     padding: 14px;
   }
 
@@ -163,7 +165,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   #screen-loading p {
     color: var(--text-muted);
-    font-size: 15px;
+    font-size: 20px;
   }
 
   /* ── TELA VAZIA ── */
@@ -173,16 +175,16 @@
     gap: 16px;
     text-align: center;
   }
-  .empty-icon { font-size: 64px; }
+  .empty-icon { font-size: 80px; }
   #screen-empty h2 {
     font-family: 'DM Serif Display', serif;
-    font-size: 26px;
+    font-size: 40px;
   }
   #screen-empty p {
     color: var(--text-muted);
-    font-size: 15px;
+    font-size: 20px;
     line-height: 1.6;
-    max-width: 280px;
+    max-width: 320px;
   }
 
   /* ── TELA DE REVISÃO ── */
@@ -200,21 +202,21 @@
     flex-shrink: 0;
   }
   .review-counter {
-    font-size: 13px;
+    font-size: 19px;
     font-weight: 600;
     color: var(--text-muted);
   }
   .review-counter span {
     color: var(--text);
   }
-  .review-theme {
-    font-size: 12px;
+  .review-theme-badge {
+    font-size: 17px;
     font-weight: 600;
     color: var(--accent);
     background: var(--accent-dim);
-    padding: 5px 12px;
+    padding: 5px 14px;
     border-radius: 20px;
-    max-width: 150px;
+    max-width: 170px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -222,7 +224,7 @@
 
   /* Barra de progresso */
   .progress-bar {
-    height: 3px;
+    height: 4px;
     background: var(--surface2);
     border-radius: 2px;
     flex-shrink: 0;
@@ -236,92 +238,142 @@
     transition: width .4s ease;
   }
 
-  /* Card */
+  /* ── FLIP CARD ── */
   .card-area {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    perspective: 1000px;
+    perspective: 1200px;
     overflow: hidden;
   }
-  .card {
+
+  .flip-card {
     width: 100%;
     max-width: 440px;
+    height: 260px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+  .flip-card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  /* animação de saída ao avaliar */
+  .flip-card.exit-left {
+    transform: translateX(-80px) rotate(-5deg);
+    opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
+  }
+  .flip-card.enter-right {
+    transform: translateX(80px) rotate(5deg);
+    opacity: 0;
+    transition: none;
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 32px 28px;
-    min-height: 220px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 20px;
-    position: relative;
-    transition: transform .2s ease, opacity .2s ease;
+    gap: 16px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
-  .card.flip-out {
-    transform: translateX(-60px) rotate(-4deg);
-    opacity: 0;
+
+  /* Frente: mostra o TEMA */
+  .card-front {
+    /* visível por padrão */
   }
-  .card.flip-in {
-    transform: translateX(60px) rotate(4deg);
-    opacity: 0;
+
+  /* Verso: mostra o ITEM */
+  .card-back {
+    transform: rotateY(180deg);
+    background: var(--surface2);
+    border-color: var(--accent);
   }
-  .card-label {
-    font-size: 11px;
+
+  .card-face-label {
+    font-size: 15px;
     font-weight: 600;
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: 1.5px;
   }
-  .card-text {
-    font-size: 18px;
-    line-height: 1.6;
+
+  .card-face-content {
+    font-size: 24px;
+    line-height: 1.5;
     color: var(--text);
     font-weight: 400;
   }
-  .card-meta {
+
+  .card-front .card-face-content {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--accent);
+  }
+
+  .card-tap-hint {
+    font-size: 15px;
+    color: var(--text-dim);
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-top: 8px;
+    gap: 6px;
+    margin-top: 4px;
   }
-  .card-ef {
-    font-size: 11px;
-    color: var(--text-dim);
+
+  .card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    width: fit-content;
   }
-  .card-revisoes {
-    font-size: 11px;
-    color: var(--text-dim);
+  .badge-novo {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+  .badge-revisao {
+    background: var(--green-bg);
+    color: var(--green);
   }
 
   /* Botões de avaliação */
   .eval-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 14px;
     padding: 20px 0 max(20px, env(safe-area-inset-bottom));
     flex-shrink: 0;
   }
   .btn-eval {
     border: none;
     border-radius: var(--radius);
-    padding: 22px 16px;
+    padding: 26px 16px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
+    font-size: 22px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     transition: transform .15s, filter .15s;
   }
   .btn-eval:active { transform: scale(0.95); }
-  .btn-eval .eval-icon { font-size: 26px; }
-  .btn-eval .eval-label { font-size: 14px; }
-  .btn-eval .eval-sub { font-size: 11px; opacity: .7; }
+  .btn-eval .eval-icon { font-size: 32px; }
+  .btn-eval .eval-label { font-size: 20px; }
 
   .btn-lembrei {
     background: var(--green-bg);
@@ -337,6 +389,15 @@
   }
   .btn-nao-lembrei:active { filter: brightness(1.2); }
 
+  /* Botões de avaliação ficam ocultos até o card ser virado */
+  .eval-buttons {
+    transition: opacity .3s ease;
+  }
+  .eval-buttons.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   /* ── TELA DE RESUMO ── */
   #screen-summary {
     justify-content: center;
@@ -348,11 +409,11 @@
   }
   .summary-header h2 {
     font-family: 'DM Serif Display', serif;
-    font-size: 32px;
+    font-size: 44px;
   }
   .summary-header p {
     color: var(--text-muted);
-    font-size: 14px;
+    font-size: 19px;
     margin-top: 6px;
   }
   .summary-stats {
@@ -369,13 +430,13 @@
   }
   .stat-number {
     font-family: 'DM Serif Display', serif;
-    font-size: 40px;
+    font-size: 52px;
     line-height: 1;
   }
   .stat-number.green { color: var(--green); }
   .stat-number.red { color: var(--red); }
   .stat-label {
-    font-size: 12px;
+    font-size: 17px;
     color: var(--text-muted);
     margin-top: 6px;
     font-weight: 600;
@@ -389,11 +450,11 @@
     padding: 20px 24px;
   }
   .pct-bar-bg {
-    height: 8px;
+    height: 10px;
     background: var(--surface2);
     border-radius: 4px;
     overflow: hidden;
-    margin: 10px 0 8px;
+    margin: 12px 0 10px;
   }
   .pct-bar-fill {
     height: 100%;
@@ -404,14 +465,14 @@
   .pct-label {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
+    font-size: 18px;
     color: var(--text-muted);
   }
-  .pct-label strong { color: var(--text); font-size: 15px; }
+  .pct-label strong { color: var(--text); font-size: 20px; }
 
   .summary-syncing {
     text-align: center;
-    font-size: 13px;
+    font-size: 18px;
     color: var(--text-muted);
     display: flex;
     align-items: center;
@@ -419,7 +480,7 @@
     gap: 8px;
   }
   .sync-dot {
-    width: 8px; height: 8px;
+    width: 10px; height: 10px;
     background: var(--accent);
     border-radius: 50%;
     animation: pulse 1.4s ease-in-out infinite;
@@ -443,9 +504,9 @@
     background: var(--surface2);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: 12px 20px;
+    padding: 14px 24px;
     border-radius: 30px;
-    font-size: 13px;
+    font-size: 18px;
     opacity: 0;
     transition: all .3s ease;
     white-space: nowrap;
@@ -462,7 +523,7 @@
     border: 1px solid var(--red-border);
     border-radius: var(--radius-sm);
     padding: 14px 16px;
-    font-size: 13px;
+    font-size: 18px;
     color: var(--red);
     line-height: 1.5;
     display: none;
@@ -504,14 +565,13 @@
   <div class="empty-icon">🎉</div>
   <h2>Dia livre!</h2>
   <p>Nenhum item para revisar hoje. Volte amanhã ou adicione novos itens no Google Sheets.</p>
-  <button class="btn btn-ghost" style="margin-top:16px" onclick="irParaConfig()">Trocar configuração</button>
 </div>
 
 <!-- ══ TELA 4: REVISÃO ══ -->
 <div class="screen" id="screen-review">
   <div class="review-header">
     <div class="review-counter"><span id="counter-atual">1</span> de <span id="counter-total">0</span></div>
-    <div class="review-theme" id="review-theme">Tema</div>
+    <div class="review-theme-badge" id="review-theme-badge">Tema</div>
   </div>
 
   <div class="progress-bar">
@@ -519,26 +579,31 @@
   </div>
 
   <div class="card-area">
-    <div class="card" id="card">
-      <div class="card-label">Item para revisar</div>
-      <div class="card-text" id="card-text">Carregando...</div>
-      <div class="card-meta">
-        <span class="card-ef" id="card-ef"></span>
-        <span class="card-revisoes" id="card-revisoes"></span>
+    <div class="flip-card" id="flip-card" onclick="virarCard()">
+      <!-- FRENTE: Tema -->
+      <div class="card-face card-front">
+        <div class="card-face-label">Toque para revelar</div>
+        <div class="card-face-content" id="card-tema">—</div>
+        <div class="card-tap-hint">👆 toque para ver o item</div>
+      </div>
+      <!-- VERSO: Item -->
+      <div class="card-face card-back">
+        <div class="card-badge" id="card-badge">
+          <!-- preenchido via JS -->
+        </div>
+        <div class="card-face-content" id="card-text">—</div>
       </div>
     </div>
   </div>
 
-  <div class="eval-buttons">
+  <div class="eval-buttons hidden" id="eval-buttons">
     <button class="btn-eval btn-nao-lembrei" onclick="avaliar('nao')">
       <span class="eval-icon">✕</span>
       <span class="eval-label">Não lembrei</span>
-      <span class="eval-sub">Volta amanhã</span>
     </button>
     <button class="btn-eval btn-lembrei" onclick="avaliar('sim')">
       <span class="eval-icon">✓</span>
       <span class="eval-label">Lembrei</span>
-      <span class="eval-sub">Intervalo aumenta</span>
     </button>
   </div>
 </div>
@@ -595,6 +660,7 @@ let APP_URL = 'https://script.google.com/macros/s/AKfycbzUpZUZJ5rcS-odqaSGbTIHwC
 let itens = [];
 let idx = 0;
 let resultados = [];
+let cardVirado = false;
 
 // ═══════════════════════════════════════════
 // NAVEGAÇÃO ENTRE TELAS
@@ -684,43 +750,88 @@ function atualizarCard(animar) {
 
   document.getElementById('counter-atual').textContent = idx + 1;
   document.getElementById('counter-total').textContent = total;
-  document.getElementById('review-theme').textContent = item.tema || '—';
+  document.getElementById('review-theme-badge').textContent = item.tema || '—';
   document.getElementById('progress-fill').style.width = ((idx / total) * 100) + '%';
 
-  const ef = parseFloat(item.ef) || 2.5;
+  // Frente: tema
+  document.getElementById('card-tema').textContent = item.tema || '—';
+
+  // Verso: badge novo/revisão + item
   const rev = parseInt(item.totalRevisoes) || 0;
-  document.getElementById('card-ef').textContent = `EF: ${ef.toFixed(1)}`;
-  document.getElementById('card-revisoes').textContent = rev === 0 ? 'Novo item' : `${rev}ª revisão`;
+  const badge = document.getElementById('card-badge');
+  if (rev === 0) {
+    badge.className = 'card-badge badge-novo';
+    badge.textContent = '✨ Novo item';
+  } else {
+    badge.className = 'card-badge badge-revisao';
+    badge.textContent = `🔁 ${rev}ª revisão`;
+  }
+  document.getElementById('card-text').textContent = item.item;
+
+  // Reset do flip e botões
+  cardVirado = false;
+  const flipCard = document.getElementById('flip-card');
+  const evalBtns = document.getElementById('eval-buttons');
 
   if (animar) {
-    const card = document.getElementById('card');
-    card.classList.add('flip-in');
+    // Entrada animada
+    flipCard.classList.add('enter-right');
+    evalBtns.classList.add('hidden');
+    // Remove flip imediatamente (sem transição) antes de entrar
+    flipCard.classList.remove('flipped');
+    void flipCard.offsetWidth; // reflow
     setTimeout(() => {
-      document.getElementById('card-text').textContent = item.item;
-      card.classList.remove('flip-in');
-    }, 200);
+      flipCard.classList.remove('enter-right');
+      flipCard.style.transition = '';
+    }, 30);
   } else {
-    document.getElementById('card-text').textContent = item.item;
+    flipCard.classList.remove('flipped');
+    evalBtns.classList.add('hidden');
+    flipCard.style.transition = 'none';
+    void flipCard.offsetWidth;
+    flipCard.style.transition = '';
   }
+}
+
+function virarCard() {
+  if (cardVirado) return; // só pode virar uma vez por card
+  cardVirado = true;
+
+  const flipCard = document.getElementById('flip-card');
+  const evalBtns = document.getElementById('eval-buttons');
+
+  flipCard.classList.add('flipped');
+
+  // Mostra botões de avaliação após o flip terminar
+  setTimeout(() => {
+    evalBtns.classList.remove('hidden');
+  }, 350);
 }
 
 function avaliar(resp) {
   const item = itens[idx];
-  const card = document.getElementById('card');
+  const flipCard = document.getElementById('flip-card');
+  const evalBtns = document.getElementById('eval-buttons');
 
   resultados.push({ id: item.id, avaliacao: resp === 'sim' ? 'Lembrei' : 'Não lembrei' });
 
-  card.classList.add('flip-out');
+  // Oculta botões imediatamente
+  evalBtns.classList.add('hidden');
+
+  // Animação de saída
+  flipCard.style.transition = 'transform .22s ease, opacity .22s ease';
+  flipCard.classList.add('exit-left');
 
   setTimeout(() => {
-    card.classList.remove('flip-out');
+    flipCard.classList.remove('exit-left');
+    flipCard.style.transition = '';
     idx++;
     if (idx >= itens.length) {
       mostrarResumo();
     } else {
       atualizarCard(true);
     }
-  }, 200);
+  }, 230);
 }
 
 // ═══════════════════════════════════════════
@@ -739,7 +850,6 @@ function mostrarResumo() {
   document.getElementById('pct-valor').textContent = pct + '%';
   document.getElementById('summary-data').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  // Mensagem motivacional
   let emoji = '✅', msg = '';
   if (pct >= 90) { emoji = '🔥'; msg = 'Excelente! Você está dominando o conteúdo.'; }
   else if (pct >= 70) { emoji = '✅'; msg = 'Ótimo desempenho! Continue assim.'; }
@@ -749,12 +859,10 @@ function mostrarResumo() {
   document.getElementById('summary-emoji').textContent = emoji + ' Revisão concluída!';
   document.getElementById('pct-msg').textContent = msg;
 
-  // Anima barra depois de um tick
   setTimeout(() => {
     document.getElementById('pct-bar').style.width = pct + '%';
   }, 100);
 
-  // Sincroniza com Sheets
   sincronizar();
 }
 
