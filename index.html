@@ -221,6 +221,37 @@
   .badge-novo { background: var(--accent-dim); color: var(--accent); }
   .badge-revisao { background: var(--green-bg); color: var(--green); }
   .badge-treino { background: var(--orange-bg); color: var(--orange); }
+  .badge-futuro { background: #1a2b2b; color: #4ecdc4; border: 1px solid #2a4a4a; }
+
+  /* ── Imagens nos cards ── */
+  .card-img {
+    max-width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    margin: 8px auto 0;
+    display: block;
+    cursor: zoom-in;
+  }
+
+  /* ── Lightbox ── */
+  #lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+  }
+  #lightbox.active { display: flex; }
+  #lightbox img {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+  }
 
   .eval-buttons {
     display: grid;
@@ -413,10 +444,12 @@
       <div class="card-face card-front">
         <div class="card-badge" id="card-badge-front"></div>
         <div class="card-face-content" id="card-tema">—</div>
+        <img class="card-img" id="card-img-tema" src="" alt="" style="display:none" onclick="abrirLightbox(event, this.src)">
         <div class="card-tap-hint">👆 TOQUE PARA SABER MAIS 👆</div>
       </div>
       <div class="card-face card-back">
         <div class="card-face-content" id="card-text">—</div>
+        <img class="card-img" id="card-img-item" src="" alt="" style="display:none" onclick="abrirLightbox(event, this.src)">
       </div>
     </div>
   </div>
@@ -484,6 +517,10 @@
   </div>
 </div>
 
+<div id="lightbox" onclick="fecharLightbox()">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -541,12 +578,10 @@ async function carregarItens() {
   }
 }
 
-// ─── MODIFICAÇÃO 1: carregarTreino lê a fila persistente da planilha ──────────
 async function carregarTreino() {
   mostrarTela('screen-loading');
   document.getElementById('loading-msg').textContent = 'Preparando modo treino…';
   try {
-    // Busca todos os itens E a fila de vistos simultaneamente
     const [resTodos, resFila] = await Promise.all([
       fetch(`${APP_URL}?action=getTodosItens`, { method: 'GET' }),
       fetch(`${APP_URL}?action=getFilaTreino`, { method: 'GET' })
@@ -562,10 +597,8 @@ async function carregarTreino() {
     const todosIds = dataTodos.itens.map(i => String(i.id));
     const vistos = (dataFila.ids || []).map(String);
 
-    // Filtra itens ainda não vistos neste ciclo
     let pendentes = dataTodos.itens.filter(i => !vistos.includes(String(i.id)));
 
-    // Se não há mais pendentes, zera a fila na planilha e começa tudo de novo
     if (pendentes.length === 0) {
       await fetch(APP_URL, {
         method: 'POST',
@@ -633,12 +666,36 @@ function atualizarCard(animar, direcao) {
   document.getElementById('card-tema').innerHTML = (item.tema || '—').replace(/\n/g, '<br>');
   document.getElementById('card-text').innerHTML = (item.item || '').replace(/\n/g, '<br>');
 
+  // ── Imagem da frente (IMG Tema) ──
+  const imgTema = document.getElementById('card-img-tema');
+  if (item.imgTema === 'sim') {
+    imgTema.src = `imagens/tema_${item.id}.png`;
+    imgTema.style.display = 'block';
+  } else {
+    imgTema.src = '';
+    imgTema.style.display = 'none';
+  }
+
+  // ── Imagem do verso (IMG Item) ──
+  const imgItem = document.getElementById('card-img-item');
+  if (item.imgItem === 'sim') {
+    imgItem.src = `imagens/item_${item.id}.png`;
+    imgItem.style.display = 'block';
+  } else {
+    imgItem.src = '';
+    imgItem.style.display = 'none';
+  }
+
   const rev = parseInt(item.totalRevisoes) || 0;
   const badgeFront = document.getElementById('card-badge-front');
 
   if (modoTreino) {
     badgeFront.className = 'card-badge badge-treino';
     badgeFront.textContent = '🎯 Treino';
+  } else if (item.diasAdiantado > 0) {
+    // Item futuro antecipado para completar as 40 questões
+    badgeFront.className = 'card-badge badge-futuro';
+    badgeFront.textContent = `⏭ +${item.diasAdiantado}d adiantado`;
   } else if (rev === 0) {
     badgeFront.className = 'card-badge badge-novo';
     badgeFront.textContent = '✨ Novo item';
@@ -700,13 +757,11 @@ function virarCard() {
   }
 }
 
-// ─── MODIFICAÇÃO 2: navegarTreino registra o item visto na planilha ───────────
 function navegarTreino(direcao) {
   const flipCard = document.getElementById('flip-card');
   document.getElementById('nav-buttons').classList.add('hidden');
   document.getElementById('nav-sair').classList.add('hidden');
 
-  // Registra o item atual como visto antes de avançar | Só registra como visto ao avançar (→), nunca ao voltar (←)
   if (direcao === 1 && !idsVistosTreino.includes(String(itens[idx].id))) {
     idsVistosTreino.push(String(itens[idx].id));
     registrarVistoTreino(itens[idx].id);
@@ -731,7 +786,6 @@ function navegarTreino(direcao) {
   }, 230);
 }
 
-// ─── NOVA FUNÇÃO: envia um ID para ser acrescentado à fila persistente ────────
 function registrarVistoTreino(id) {
   fetch(APP_URL, {
     method: 'POST',
@@ -888,7 +942,6 @@ async function mostrarResumo() {
   const barColor = pct < 50 ? '#ff5f6d' : pct < 75 ? '#f5a623' : '#2ecc8a';
   barEl.style.background = barColor;
 
-  // ─── MODIFICAÇÃO 3: histórico sempre carrega, inclusive ao sair do modo treino
   barEl.style.transition = 'none';
   barEl.style.width = '0%';
   await carregarEExibirHistorico();
@@ -918,6 +971,17 @@ function toast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function abrirLightbox(e, src) {
+  e.stopPropagation();
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function fecharLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.getElementById('lightbox-img').src = '';
 }
 
 window.addEventListener('load', () => { carregarItens(); });
