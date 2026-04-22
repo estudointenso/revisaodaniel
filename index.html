@@ -142,6 +142,7 @@
     padding: 8px 0;
   }
 
+  /* ─── FIX BUG 1: removido onclick do flip-card ─── */
   .flip-card {
     width: 100%;
     max-width: 440px;
@@ -149,7 +150,7 @@
     position: relative;
     transform-style: preserve-3d;
     transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
+    /* cursor: pointer  ← removido daqui */
   }
   .flip-card.flipped { transform: rotateY(180deg); }
   .flip-card.exit-left {
@@ -173,6 +174,7 @@
     transition: none;
   }
 
+  /* ─── FIX BUG 2: card-front agora pode rolar ─── */
   .card-face {
     position: absolute;
     inset: 0;
@@ -186,7 +188,7 @@
     gap: 12px;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;                        /* era scroll — auto é mais limpo */
     -webkit-overflow-scrolling: touch;
   }
   .card-back {
@@ -207,6 +209,8 @@
     font-size: 36px;
     color: var(--accent);
   }
+
+  /* ─── FIX BUG 1+2: o hint vira o gatilho de clique ─── */
   .card-tap-hint {
     font-size: 15px;
     color: var(--text-dim);
@@ -215,7 +219,14 @@
     gap: 6px;
     margin-top: 4px;
     justify-content: center;
+    cursor: pointer;                         /* só aqui tem cursor pointer */
+    padding: 10px 0;                         /* área de toque maior */
+    border-radius: var(--radius-sm);
+    transition: background .15s;
+    flex-shrink: 0;
   }
+  .card-tap-hint:active { background: var(--surface2); }
+
   .card-badge {
     display: inline-flex;
     align-items: center;
@@ -446,12 +457,14 @@
     <div class="progress-fill" id="progress-fill" style="width:0%"></div>
   </div>
   <div class="card-area">
-    <div class="flip-card" id="flip-card" onclick="virarCard()">
+    <!-- ─── FIX BUG 1: onclick removido daqui ─── -->
+    <div class="flip-card" id="flip-card">
       <div class="card-face card-front">
         <div class="card-badge" id="card-badge-front"></div>
         <div class="card-face-content" id="card-tema">—</div>
         <img class="card-img" id="card-img-tema" src="" alt="" style="display:none" onclick="abrirLightbox(event, this.src)">
-        <div class="card-tap-hint">👆 TOQUE PARA SABER MAIS 👆</div>
+        <!-- ─── FIX BUG 1+2: apenas este elemento dispara virarCard() ─── -->
+        <div class="card-tap-hint" id="card-tap-hint">👆 TOQUE PARA SABER MAIS 👆</div>
       </div>
       <div class="card-face card-back">
         <div class="card-face-content" id="card-text">—</div>
@@ -532,7 +545,6 @@
 <script>
 const APP_URL = 'https://script.google.com/macros/s/AKfycbzUpZUZJ5rcS-odqaSGbTIHwCzi-xJGgBgCsGR-Kq4kOta_iDD1pXpir8m2MDMoqQ1oRg/exec';
 
-// ── Chaves do localStorage ──
 const LS_HISTORICO = 'revisao_historico';
 const LS_HIST_DATA = 'revisao_historico_data';
 
@@ -542,6 +554,9 @@ let resultados = [];
 let cardVirado = false;
 let modoTreino = false;
 let idsVistosTreino = [];
+
+// ─── FIX BUG 1: flag que bloqueia cliques durante animação ───
+let isAnimating = false;
 
 function hojeStr() {
   return new Date().toISOString().slice(0, 10);
@@ -562,9 +577,6 @@ function carregarHistoricoLocal() {
   catch { return null; }
 }
 
-// ───────────────────────────────────────────────────────────────
-// NAVEGAÇÃO DE TELAS
-// ───────────────────────────────────────────────────────────────
 function mostrarTela(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -579,9 +591,6 @@ function embaralhar(arr) {
   return a;
 }
 
-// ───────────────────────────────────────────────────────────────
-// CARREGAMENTO INICIAL
-// ───────────────────────────────────────────────────────────────
 async function carregarItens() {
   mostrarTela('screen-loading');
   document.getElementById('loading-msg').textContent = 'Carregando itens do dia…';
@@ -594,7 +603,6 @@ async function carregarItens() {
     const dataItens   = await resItens.json();
     const dataSummary = await resSummary.json();
 
-    // Resultados vêm sempre do servidor
     resultados = (dataSummary.avaliacoes || []).map(a => ({ id: a.id, avaliacao: a.avaliacao }));
 
     if (dataItens.itens && dataItens.itens.length > 0) {
@@ -654,9 +662,6 @@ async function carregarTreino() {
   }
 }
 
-// ───────────────────────────────────────────────────────────────
-// TELAS ESPECIAIS
-// ───────────────────────────────────────────────────────────────
 function mostrarDiaLivre() {
   mostrarTela('screen-summary');
   document.getElementById('stat-lembrei').textContent = '—';
@@ -669,7 +674,6 @@ function mostrarDiaLivre() {
   document.getElementById('sync-status').innerHTML = '';
   document.getElementById('btn-nova-rodada').textContent = '🎯 Entrar no modo treino';
   document.getElementById('btn-nova-rodada').dataset.action = 'treino';
-  // Histórico já foi carregado do servidor em carregarItens()
   renderizarHistorico(carregarHistoricoLocal() || []);
 }
 
@@ -687,9 +691,6 @@ function mostrarResumoVazio() {
   document.getElementById('bloco-historico').style.display = 'none';
 }
 
-// ───────────────────────────────────────────────────────────────
-// REVISÃO
-// ───────────────────────────────────────────────────────────────
 function iniciarRevisao() {
   mostrarTela('screen-review');
   document.getElementById('treino-badge').style.display = modoTreino ? 'block' : 'none';
@@ -747,11 +748,16 @@ function atualizarCard(animar, direcao) {
   document.getElementById('nav-buttons').classList.add('hidden');
   document.getElementById('nav-sair').classList.add('hidden');
 
+  // ─── FIX BUG 1: mostrar hint apenas no modo revisão (não treino) ───
+  const hint = document.getElementById('card-tap-hint');
+  hint.style.display = modoTreino ? 'none' : 'flex';
+
   if (modoTreino) {
     document.getElementById('btn-anterior').disabled = idx === 0;
   }
 
   cardVirado = false;
+  isAnimating = false; // ─── FIX BUG 1: reset da flag ao trocar de card ───
   const flipCard = document.getElementById('flip-card');
 
   if (animar) {
@@ -771,28 +777,36 @@ function atualizarCard(animar, direcao) {
   }
 }
 
+// ─── FIX BUG 1: virarCard agora é chamado pelo hint, com guarda isAnimating ───
 function virarCard() {
+  if (isAnimating) return; // bloqueia clique duplo durante animação
+
   const flipCard = document.getElementById('flip-card');
   const evalBtns = document.getElementById('eval-buttons');
   const navBtns  = document.getElementById('nav-buttons');
 
   if (!cardVirado) {
+    isAnimating = true;
     cardVirado = true;
     flipCard.classList.add('flipped');
+    // libera após a animação de flip (550ms definido no CSS)
     setTimeout(() => {
+      isAnimating = false;
       if (modoTreino) {
         navBtns.classList.remove('hidden');
         document.getElementById('nav-sair').classList.remove('hidden');
       } else {
         evalBtns.classList.remove('hidden');
       }
-    }, 350);
+    }, 560); // ligeiramente maior que os 550ms do CSS
   } else {
+    isAnimating = true;
     cardVirado = false;
     flipCard.classList.remove('flipped');
     evalBtns.classList.add('hidden');
     navBtns.classList.add('hidden');
     document.getElementById('nav-sair').classList.add('hidden');
+    setTimeout(() => { isAnimating = false; }, 560);
   }
 }
 
@@ -856,7 +870,6 @@ function avaliar(resp) {
     headers: { 'Content-Type': 'text/plain' }
   }).catch(() => {});
 
-  // Grava histórico só no último item
   const isUltimoItem = (idx + 1) >= itens.length;
   if (isUltimoItem) {
     const totalLembrei = resultados.filter(r => r.avaliacao === 'Lembrei').length;
@@ -878,9 +891,6 @@ function avaliar(resp) {
   }, 230);
 }
 
-// ───────────────────────────────────────────────────────────────
-// RESUMO
-// ───────────────────────────────────────────────────────────────
 async function mostrarResumo(summaryPreCarregado) {
   mostrarTela('screen-loading');
   document.getElementById('loading-msg').textContent = 'Calculando aproveitamento…';
@@ -941,9 +951,6 @@ async function mostrarResumo(summaryPreCarregado) {
   }, 100);
 }
 
-// ───────────────────────────────────────────────────────────────
-// HISTÓRICO
-// ───────────────────────────────────────────────────────────────
 function renderizarHistorico(historico) {
   const bloco = document.getElementById('bloco-historico');
   if (!historico || historico.length === 0) {
@@ -1027,6 +1034,11 @@ function fecharLightbox() {
   document.getElementById('lightbox').classList.remove('active');
   document.getElementById('lightbox-img').src = '';
 }
+
+// ─── FIX BUG 1+2: listener no hint, não no flip-card ───
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('card-tap-hint').addEventListener('click', virarCard);
+});
 
 window.addEventListener('load', () => { carregarItens(); });
 </script>
