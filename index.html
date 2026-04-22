@@ -31,29 +31,43 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  html, body {
+  html {
+    height: 100%;
+    background: var(--bg);
+  }
+
+  body {
     height: 100%;
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
     font-size: 20px;
     touch-action: manipulation;
+    /* REMOVIDO: overflow: hidden e position: fixed que quebravam o scroll no iOS */
   }
 
   .screen {
-    position: absolute;
+    position: fixed;
     inset: 0;
     display: flex;
     flex-direction: column;
-    padding: env(safe-area-inset-top, 16px) 20px env(safe-area-inset-bottom, 16px);
+    /* Padding com safe-area para notch/home bar do iPhone */
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
     opacity: 0;
     pointer-events: none;
     transition: opacity .3s ease;
   }
   .screen.active { opacity: 1; pointer-events: all; }
+
+  /* Tela de revisão tem scroll interno correto para iOS */
+  #screen-review {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
 
   .btn {
     border: none;
@@ -76,6 +90,7 @@
     padding: 14px;
   }
 
+  /* ── Loading ── */
   #screen-loading { justify-content: center; align-items: center; gap: 20px; text-align: center; }
   .spinner {
     width: 48px; height: 48px;
@@ -87,14 +102,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   #screen-loading p { color: var(--text-muted); font-size: 20px; }
 
-  #screen-review { 
-    gap: 0; 
-    padding-bottom: 0; 
-    overflow-y: auto; 
-    height: 100%;
-    -webkit-overflow-scrolling: touch;
-  }
-
+  /* ── Header da revisão ── */
   .review-header {
     display: flex;
     align-items: center;
@@ -133,6 +141,7 @@
     background: linear-gradient(90deg, var(--orange), #f5d623);
   }
 
+  /* ── Card ── */
   .card-area {
     flex-shrink: 0;
     display: flex;
@@ -142,7 +151,6 @@
     padding: 8px 0;
   }
 
-  /* ─── FIX BUG 1: removido onclick do flip-card ─── */
   .flip-card {
     width: 100%;
     max-width: 440px;
@@ -150,9 +158,10 @@
     position: relative;
     transform-style: preserve-3d;
     transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-    /* cursor: pointer  ← removido daqui */
+    /* Cursor padrão: o botão cuida do clique agora */
+    cursor: default;
   }
-  .flip-card.flipped { transform: rotateY(180deg); }
+  .flip-card.flipped { transform: rotateY(180deg); pointer-events: none; }
   .flip-card.exit-left {
     transform: translateX(-80px) rotate(-5deg);
     opacity: 0;
@@ -174,7 +183,6 @@
     transition: none;
   }
 
-  /* ─── FIX BUG 2: card-front agora pode rolar ─── */
   .card-face {
     position: absolute;
     inset: 0;
@@ -188,7 +196,7 @@
     gap: 12px;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    overflow-y: auto;                        /* era scroll — auto é mais limpo */
+    overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
   }
   .card-back {
@@ -209,23 +217,7 @@
     font-size: 36px;
     color: var(--accent);
   }
-
-  /* ─── FIX BUG 1+2: o hint vira o gatilho de clique ─── */
-  .card-tap-hint {
-    font-size: 15px;
-    color: var(--text-dim);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 4px;
-    justify-content: center;
-    cursor: pointer;                         /* só aqui tem cursor pointer */
-    padding: 10px 0;                         /* área de toque maior */
-    border-radius: var(--radius-sm);
-    transition: background .15s;
-    flex-shrink: 0;
-  }
-  .card-tap-hint:active { background: var(--surface2); }
+  /* Hint de toque removido — substituído pelo botão */
 
   .card-badge {
     display: inline-flex;
@@ -252,6 +244,7 @@
     cursor: zoom-in;
   }
 
+  /* ── Lightbox ── */
   #lightbox {
     display: none;
     position: fixed;
@@ -270,13 +263,44 @@
     border-radius: var(--radius-sm);
   }
 
+  /* ── Área de botões de ação (virar / avaliar / navegar) ──
+     Mantém sempre a mesma altura para não causar layout shift */
+  .action-zone {
+    flex-shrink: 0;
+    padding: 8px 0 max(12px, env(safe-area-inset-bottom));
+  }
+
+  /* Botão VIRAR FLASHCARD — mesma estética dos outros, ocupa linha inteira */
+  .btn-virar {
+    border: none;
+    border-radius: var(--radius);
+    padding: 20px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    transition: transform .15s, filter .15s, opacity .15s;
+  }
+  .btn-virar:active { transform: scale(0.97); filter: brightness(1.2); }
+  .btn-virar .virar-icon { font-size: 24px; }
+  .btn-virar.btn-desvirar {
+    opacity: 1;
+  }
+  .btn-virar.btn-desvirar:active { opacity: 1; }
+
+  /* Botões de avaliação (lembrei / não lembrei) */
   .eval-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    padding: 8px 0 max(12px, env(safe-area-inset-bottom));
-    flex-shrink: 0;
-    transition: opacity .3s ease;
   }
   .eval-buttons.hidden { display: none; }
 
@@ -301,16 +325,13 @@
   .btn-nao-lembrei { background: var(--red-bg); border: 1.5px solid var(--red-border); color: var(--red); }
   .btn-nao-lembrei:active { filter: brightness(1.2); }
 
+  /* Botões de navegação (modo treino) */
   .nav-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
     gap: 10px;
-    padding: 8px 0 max(12px, env(safe-area-inset-bottom));
-    flex-shrink: 0;
-    transition: opacity .3s ease;
   }
-  .nav-buttons.hidden  { display: none; }
+  .nav-buttons.hidden { display: none; }
 
   .btn-nav {
     border: 1.5px solid var(--orange-border);
@@ -333,16 +354,16 @@
   .btn-nav:disabled { opacity: 0.3; pointer-events: none; }
 
   .nav-sair {
-    padding: 0 0 max(16px, env(safe-area-inset-bottom));
-    flex-shrink: 0;
-    transition: opacity .3s ease;
+    padding-top: 10px;
   }
-  .nav-sair.hidden { opacity: 0; pointer-events: none; }
+  .nav-sair.hidden { display: none; }
 
+  /* ── Resumo ── */
   #screen-summary {
     gap: 14px;
     padding-top: 32px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .summary-header { text-align: center; flex-shrink: 0; }
@@ -456,15 +477,14 @@
   <div class="progress-bar">
     <div class="progress-fill" id="progress-fill" style="width:0%"></div>
   </div>
+
+  <!-- Card (sem onclick — o botão cuida do virar) -->
   <div class="card-area">
-    <!-- ─── FIX BUG 1: onclick removido daqui ─── -->
     <div class="flip-card" id="flip-card">
       <div class="card-face card-front">
         <div class="card-badge" id="card-badge-front"></div>
         <div class="card-face-content" id="card-tema">—</div>
         <img class="card-img" id="card-img-tema" src="" alt="" style="display:none" onclick="abrirLightbox(event, this.src)">
-        <!-- ─── FIX BUG 1+2: apenas este elemento dispara virarCard() ─── -->
-        <div class="card-tap-hint" id="card-tap-hint">👆 TOQUE PARA SABER MAIS 👆</div>
       </div>
       <div class="card-face card-back">
         <div class="card-face-content" id="card-text">—</div>
@@ -472,28 +492,49 @@
       </div>
     </div>
   </div>
-  <div class="eval-buttons hidden" id="eval-buttons">
-    <button class="btn-eval btn-nao-lembrei" onclick="avaliar('nao')">
-      <span class="eval-icon">✕</span>
-      <span class="eval-label">Não lembrei</span>
+
+  <!-- Zona de ação: só UM bloco visível por vez -->
+  <div class="action-zone">
+
+    <!-- Estado 1: Card na frente → botão VIRAR -->
+    <button class="btn-virar" id="btn-virar" onclick="virarCard()">
+      <span class="virar-icon">↩️</span>
+      VIRAR FLASHCARD
     </button>
-    <button class="btn-eval btn-lembrei" onclick="avaliar('sim')">
-      <span class="eval-icon">✓</span>
-      <span class="eval-label">Lembrei</span>
-    </button>
-  </div>
-  <div class="nav-buttons hidden" id="nav-buttons">
-    <button class="btn-nav" id="btn-anterior" onclick="navegarTreino(-1)">
-      <span class="nav-icon">←</span>
-      <span class="nav-label">Anterior</span>
-    </button>
-    <button class="btn-nav" id="btn-proximo" onclick="navegarTreino(1)">
-      <span class="nav-icon">→</span>
-      <span class="nav-label">Próximo</span>
-    </button>
-  </div>
-  <div class="nav-sair hidden" id="nav-sair">
-    <button class="btn btn-ghost" onclick="sairDoTreino()">Sair do treino</button>
+
+    <!-- Estado 2 (revisão normal): botões de avaliação -->
+    <div class="eval-buttons hidden" id="eval-buttons">
+      <button class="btn-eval btn-nao-lembrei" onclick="avaliar('nao')">
+        <span class="eval-icon">✕</span>
+        <span class="eval-label">NÃO LEMBREI</span>
+      </button>
+      <button class="btn-eval btn-lembrei" onclick="avaliar('sim')">
+        <span class="eval-icon">✓</span>
+        <span class="eval-label">LEMBREI</span>
+      </button>
+      <button class="btn-virar btn-desvirar" onclick="virarCard()" style="grid-column: span 2; margin-top: 2px;">
+        <span class="virar-icon">↩️</span>
+        DESVIRAR FLASHCARD
+      </button>
+    </div>
+
+    <!-- Estado 2 (modo treino): navegação -->
+    <div class="nav-buttons hidden" id="nav-buttons">
+      <button class="btn-nav" id="btn-anterior" onclick="navegarTreino(-1)">
+        <span class="nav-icon">←</span>
+        <span class="nav-label">Anterior</span>
+      </button>
+      <button class="btn-nav" id="btn-proximo" onclick="navegarTreino(1)">
+        <span class="nav-icon">→</span>
+        <span class="nav-label">Próximo</span>
+      </button>
+    </div>
+
+    <!-- Sair do treino (aparece junto dos botões de nav) -->
+    <div class="nav-sair hidden" id="nav-sair">
+      <button class="btn btn-ghost" onclick="sairDoTreino()">Sair do treino</button>
+    </div>
+
   </div>
 </div>
 
@@ -505,11 +546,11 @@
   <div class="summary-stats">
     <div class="stat-card">
       <div class="stat-number green" id="stat-lembrei">0</div>
-      <div class="stat-label">Lembrei</div>
+      <div class="stat-label">LEMBREI</div>
     </div>
     <div class="stat-card">
       <div class="stat-number red" id="stat-nao">0</div>
-      <div class="stat-label">Não lembrei</div>
+      <div class="stat-label">NÃO LEMBREI</div>
     </div>
   </div>
   <div class="summary-pct">
@@ -552,11 +593,9 @@ let itens = [];
 let idx = 0;
 let resultados = [];
 let cardVirado = false;
+let animando = false;   // ← flag anti-double-tap
 let modoTreino = false;
 let idsVistosTreino = [];
-
-// ─── FIX BUG 1: flag que bloqueia cliques durante animação ───
-let isAnimating = false;
 
 function hojeStr() {
   return new Date().toISOString().slice(0, 10);
@@ -577,6 +616,7 @@ function carregarHistoricoLocal() {
   catch { return null; }
 }
 
+// ── Telas ──
 function mostrarTela(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -591,6 +631,7 @@ function embaralhar(arr) {
   return a;
 }
 
+// ── Carregamento ──
 async function carregarItens() {
   mostrarTela('screen-loading');
   document.getElementById('loading-msg').textContent = 'Carregando itens do dia…';
@@ -662,6 +703,7 @@ async function carregarTreino() {
   }
 }
 
+// ── Telas especiais ──
 function mostrarDiaLivre() {
   mostrarTela('screen-summary');
   document.getElementById('stat-lembrei').textContent = '—';
@@ -691,6 +733,7 @@ function mostrarResumoVazio() {
   document.getElementById('bloco-historico').style.display = 'none';
 }
 
+// ── Revisão ──
 function iniciarRevisao() {
   mostrarTela('screen-review');
   document.getElementById('treino-badge').style.display = modoTreino ? 'block' : 'none';
@@ -744,20 +787,18 @@ function atualizarCard(animar, direcao) {
     badgeFront.textContent = `🔁 ${rev}ª revisão`;
   }
 
+  // Reseta estado dos botões: sempre mostra "Virar flashcard" primeiro
+  cardVirado = false;
+  animando   = false;
+  document.getElementById('btn-virar').style.display   = '';
   document.getElementById('eval-buttons').classList.add('hidden');
   document.getElementById('nav-buttons').classList.add('hidden');
   document.getElementById('nav-sair').classList.add('hidden');
-
-  // ─── FIX BUG 1: mostrar hint apenas no modo revisão (não treino) ───
-  const hint = document.getElementById('card-tap-hint');
-  hint.style.display = modoTreino ? 'none' : 'flex';
 
   if (modoTreino) {
     document.getElementById('btn-anterior').disabled = idx === 0;
   }
 
-  cardVirado = false;
-  isAnimating = false; // ─── FIX BUG 1: reset da flag ao trocar de card ───
   const flipCard = document.getElementById('flip-card');
 
   if (animar) {
@@ -777,40 +818,50 @@ function atualizarCard(animar, direcao) {
   }
 }
 
-// ─── FIX BUG 1: virarCard agora é chamado pelo hint, com guarda isAnimating ───
 function virarCard() {
-  if (isAnimating) return; // bloqueia clique duplo durante animação
+  // Proteção anti-double-tap: ignora clique se já está animando
+  if (animando) return;
 
   const flipCard = document.getElementById('flip-card');
-  const evalBtns = document.getElementById('eval-buttons');
-  const navBtns  = document.getElementById('nav-buttons');
 
   if (!cardVirado) {
-    isAnimating = true;
+    // Frente → verso: inicia animação de flip
+    animando = true;
     cardVirado = true;
     flipCard.classList.add('flipped');
-    // libera após a animação de flip (550ms definido no CSS)
+
+    // Esconde botão Virar, mostra ação correta após flip terminar (550ms)
+    document.getElementById('btn-virar').style.display = 'none';
     setTimeout(() => {
-      isAnimating = false;
       if (modoTreino) {
-        navBtns.classList.remove('hidden');
+        document.getElementById('nav-buttons').classList.remove('hidden');
         document.getElementById('nav-sair').classList.remove('hidden');
       } else {
-        evalBtns.classList.remove('hidden');
+        document.getElementById('eval-buttons').classList.remove('hidden');
       }
-    }, 560); // ligeiramente maior que os 550ms do CSS
+      animando = false;
+    }, 550);
+
   } else {
-    isAnimating = true;
+    // Verso → frente: volta para frente
+    animando = true;
     cardVirado = false;
     flipCard.classList.remove('flipped');
-    evalBtns.classList.add('hidden');
-    navBtns.classList.add('hidden');
+    document.getElementById('eval-buttons').classList.add('hidden');
+    document.getElementById('nav-buttons').classList.add('hidden');
     document.getElementById('nav-sair').classList.add('hidden');
-    setTimeout(() => { isAnimating = false; }, 560);
+
+    setTimeout(() => {
+      document.getElementById('btn-virar').style.display = '';
+      animando = false;
+    }, 550);
   }
 }
 
 function navegarTreino(direcao) {
+  if (animando) return;
+  animando = true;
+
   const flipCard = document.getElementById('flip-card');
   document.getElementById('nav-buttons').classList.add('hidden');
   document.getElementById('nav-sair').classList.add('hidden');
@@ -827,6 +878,7 @@ function navegarTreino(direcao) {
   setTimeout(() => {
     flipCard.classList.remove(exitClass);
     flipCard.style.transition = '';
+    animando = false;
     const novoIdx = idx + direcao;
     if (novoIdx >= itens.length) {
       mostrarResumo();
@@ -857,6 +909,9 @@ function finalizarSessao(pct, lembrei, naoLembrei) {
 }
 
 function avaliar(resp) {
+  if (animando) return;
+  animando = true;
+
   const item      = itens[idx];
   const flipCard  = document.getElementById('flip-card');
   const evalBtns  = document.getElementById('eval-buttons');
@@ -885,12 +940,14 @@ function avaliar(resp) {
   setTimeout(() => {
     flipCard.classList.remove('exit-left');
     flipCard.style.transition = '';
+    animando = false;
     idx++;
     if (idx >= itens.length) mostrarResumo();
     else atualizarCard(true, 'right');
   }, 230);
 }
 
+// ── Resumo ──
 async function mostrarResumo(summaryPreCarregado) {
   mostrarTela('screen-loading');
   document.getElementById('loading-msg').textContent = 'Calculando aproveitamento…';
@@ -951,6 +1008,7 @@ async function mostrarResumo(summaryPreCarregado) {
   }, 100);
 }
 
+// ── Histórico ──
 function renderizarHistorico(historico) {
   const bloco = document.getElementById('bloco-historico');
   if (!historico || historico.length === 0) {
@@ -1034,11 +1092,6 @@ function fecharLightbox() {
   document.getElementById('lightbox').classList.remove('active');
   document.getElementById('lightbox-img').src = '';
 }
-
-// ─── FIX BUG 1+2: listener no hint, não no flip-card ───
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('card-tap-hint').addEventListener('click', virarCard);
-});
 
 window.addEventListener('load', () => { carregarItens(); });
 </script>
