@@ -534,6 +534,7 @@ let itens = [];
 let idx = 0;
 let resultados = [];
 let cardVirado = false;
+let animando = false;
 let modoTreino = false;
 let idsVistosTreino = [];
 
@@ -766,6 +767,9 @@ function atualizarCard(animar, direcao) {
 }
 
 function virarCard() {
+  if (animando) return; // ← BLOQUEIA DUPLO CLIQUE
+  animando = true;      // ← INICIA LOCK
+
   const flipCard = document.getElementById('flip-card');
   const evalBtns = document.getElementById('eval-buttons');
   const navBtns  = document.getElementById('nav-buttons');
@@ -774,6 +778,7 @@ function virarCard() {
     cardVirado = true;
     flipCard.classList.add('flipped');
     setTimeout(() => {
+      animando = false; // ← LIBERA APÓS ANIMAÇÃO
       if (modoTreino) {
         navBtns.classList.remove('hidden');
         document.getElementById('nav-sair').classList.remove('hidden');
@@ -782,11 +787,13 @@ function virarCard() {
       }
     }, 350);
   } else {
+    animando = true; // ← LOCK
     cardVirado = false;
     flipCard.classList.remove('flipped');
     evalBtns.classList.add('hidden');
     navBtns.classList.add('hidden');
     document.getElementById('nav-sair').classList.add('hidden');
+    setTimeout(() => { animando = false; }, 550); // ← LIBERA APÓS ANIMAÇÃO
   }
 }
 
