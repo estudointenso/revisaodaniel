@@ -136,6 +136,7 @@
   }
 
   .flip-card {
+    transform: rotateY(-180deg);
     width: 100%;
     max-width: 440px;
     height: 540px;
@@ -144,7 +145,7 @@
     transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
   }
-  .flip-card.flipped { transform: rotateY(180deg); }
+  .flip-card.flipped { transform: rotateY(0deg); }
   .flip-card.exit-left {
     transform: translateX(-80px) rotate(-5deg);
     opacity: 0;
@@ -184,7 +185,7 @@
     touch-action: pan-y;
   }
   .card-back {
-    transform: rotateY(180deg);
+    transform: rotateY(-180deg);
     background: var(--surface2);
     border-color: var(--accent);
     justify-content: center;
@@ -480,7 +481,7 @@
     <div class="progress-fill" id="progress-fill" style="width:0%"></div>
   </div>
   <div class="card-area">
-    <div class="flip-card" id="flip-card">
+    <div class="flip-card" id="flip-card" onclick="virarCard()">
       <div class="card-face card-front">
         <div class="card-badge" id="card-badge-front"></div>
         <div class="card-face-content" id="card-tema">—</div>
@@ -815,6 +816,7 @@ function atualizarCard(animar, direcao) {
   if (animar) {
     const enterClass = direcao === 'right' ? 'enter-right' : 'enter-left';
     flipCard.classList.add(enterClass);
+    flipCard.style.transform = '';
     flipCard.classList.remove('flipped');
     void flipCard.offsetWidth;
     setTimeout(() => {
@@ -1112,20 +1114,6 @@ function voltarAoMenu() {
   document.getElementById('btn-voltar-menu').style.display = 'none';
   carregarItens();
 }
-
-let touchStartY = 0;
-let touchStartX = 0;
-
-document.getElementById('flip-card').addEventListener('touchstart', (e) => {
-  touchStartY = e.touches[0].clientY;
-  touchStartX = e.touches[0].clientX;
-}, { passive: true });
-
-document.getElementById('flip-card').addEventListener('touchend', (e) => {
-  const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-  const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
-  if (dy < 10 && dx < 10) virarCard();
-});
 
 window.addEventListener('load', () => { carregarItens(); });
 </script>
