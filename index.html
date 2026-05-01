@@ -501,7 +501,7 @@
     <div class="progress-fill" id="progress-fill" style="width:0%"></div>
   </div>
   <div class="card-area">
-    <div class="flip-card" id="flip-card" onclick="virarCard()">
+    <div class="flip-card" id="flip-card">
       <div class="card-face card-front">
         <div class="card-badge" id="card-badge-front"></div>
         <div class="card-front-inner">
@@ -1136,8 +1136,14 @@ function voltarAoMenu() {
   carregarItens();
 }
 
-document.querySelector('.card-front-inner').addEventListener('touchmove', function(e) {
-  e.stopPropagation();
+let touchStartY = 0;
+document.getElementById('flip-card').addEventListener('touchstart', function(e) {
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.getElementById('flip-card').addEventListener('touchend', function(e) {
+  const diff = Math.abs(e.changedTouches[0].clientY - touchStartY);
+  if (diff < 10) virarCard();
 }, { passive: true });
 
 window.addEventListener('load', () => { carregarItens(); });
