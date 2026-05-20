@@ -530,10 +530,10 @@ let cardVirado = false;
 let animando = false;
 let sessaoConcluida = false;
 let modoLivre = false;
-const LS_HIST_KEY  = 'revisao_historico';
-const LS_HIST_DATE = 'revisao_historico_data';
-const LS_HIST_TS = 'revisao_historico_ts';
-const CACHE_TTL  = 5 * 60 * 1000;
+const LS_HIST_KEY  = `${APP_ID}_revisao_historico`;
+const LS_HIST_DATE = `${APP_ID}_revisao_historico_data`;
+const LS_HIST_TS   = `${APP_ID}_revisao_historico_ts`;
+const CACHE_TTL  = 5 * 1000;
 
 function hojeStr() {
   return new Date().toISOString().slice(0, 10);
