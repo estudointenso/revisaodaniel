@@ -604,7 +604,8 @@ async function carregarItens(modeLivre = false) {
 
     const [resItens, resSummary] = await Promise.all([
       fetch(urlItens, { method: 'GET' }),
-      fetch(`${APP_URL}?action=getSummary`, { method: 'GET' })
+      fetch(`${APP_URL}?action=getSummary`, { method: 'GET' }),
+      fetch(`${APP_URL}?action=preencherLacunas`, { method: 'GET' })
     ]);
     const dataItens   = await resItens.json();
     const dataSummary = await resSummary.json();
@@ -836,7 +837,6 @@ async function mostrarResumo(summaryPreCarregado) {
     if (cacheDia === hojeStr() && cacheData && localStorage.getItem('revisao_dirty') !== 'true' && cacheVivo) {
       historico = JSON.parse(cacheData);
     } else {
-      await fetch(`${APP_URL}?action=preencherLacunas`).catch(() => {});
       const data = await fetch(`${APP_URL}?action=getSummary`).then(r => r.json());
       historico = data.historico || [];
       localStorage.setItem(LS_HIST_KEY,  JSON.stringify(historico));
