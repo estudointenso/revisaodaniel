@@ -665,7 +665,16 @@ function configurarRetryImagem(imgElement, srcOriginal) {
 // ── AUTH ─────────────────────────────────────────────────────────
 window.fazerLogin = async function() {
   try {
-    await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    const emailDoc = await getDoc(doc(db, 'authorized_emails', user.email));
+    if (!emailDoc.exists() || !emailDoc.data().authorized) {
+      await signOut(auth);
+      mostrarTela('screen-login');
+      alert(`🔒 Acesso negado.\n\nO e-mail "${user.email}" não tem permissão para acessar este app.`);
+      return;
+    }
   } catch (e) {
     toast('Erro ao fazer login');
   }
@@ -679,6 +688,12 @@ window.fazerLogout = async function() {
 // ── INICIALIZAÇÃO ─────────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
   if (user) {
+    const emailDoc = await getDoc(doc(db, 'authorized_emails', user.email));
+    if (!emailDoc.exists() || !emailDoc.data().authorized) {
+      await signOut(auth);
+      mostrarTela('screen-login');
+      return;
+    }
     usuarioAtual = user;
     await inicializarApp();
   } else {
