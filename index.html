@@ -481,13 +481,12 @@
       </div>
       <div class="card-face card-back">
         <div class="card-face-content" id="card-text">—</div>
-        <img class="card-img" id="card-img-item" src="" alt="" style="display:none" onclick="abrirLightbox(event, this.src)">
+        <img class="card-img" id="card-img-item" src="" alt="" style="display:none" onclick="abrirLightboxAuto(event, this.dataset.basePath)">
       </div>
     </div>
   </div>
   <div id="btn-ver-imagem-wrap" style="display:none; padding: 8px 0 0; text-align:center;">
-    <button class="btn btn-primary" onclick="abrirLightbox(event, document.getElementById('lightbox-img-tema-src').value)">VER IMAGEM</button>
-    <input type="hidden" id="lightbox-img-tema-src" value="">
+    <button class="btn btn-primary" onclick="abrirLightboxAuto(event, document.getElementById('btn-ver-imagem-wrap').dataset.basePath)">VER IMAGEM</button>
   </div>
   <div class="eval-buttons hidden" id="eval-buttons">
     <button class="btn-eval btn-nao-lembrei" onclick="avaliar('nao')">
@@ -557,7 +556,11 @@
 </div>
 
 <div id="lightbox" onclick="fecharLightbox()">
-  <img id="lightbox-img" src="" alt="">
+  <img id="lightbox-img" src="" alt="" style="max-width:95vw; max-height:95vh; object-fit:contain;">
+  <video id="lightbox-video" autoplay loop playsinline webkit-playsinline style="display:none; max-width:95vw; max-height:95vh; object-fit:contain;" onclick="event.stopPropagation(); this.paused ? this.play() : this.pause()">
+    Seu navegador não suporta vídeos.
+  </video>
+  <button id="lightbox-close" onclick="fecharLightbox()" style="position:fixed; top:20px; right:20px; background:rgba(255,0,0,0.8); color:#fff; border:3px solid #000; border-radius:50%; width:60px; height:60px; font-size:2rem; font-weight:bold; z-index:10001; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</button>
 </div>
 <div id="block-overlay"></div>
 <div class="toast" id="toast"></div>
@@ -918,7 +921,7 @@ function atualizarCard(animar, direcao) {
 
   const btnVerImagem = document.getElementById('btn-ver-imagem-wrap');
   if (item.imgTema === 'sim') {
-    document.getElementById('lightbox-img-tema-src').value = `imagens/tema_${item.id}.png`;
+    btnVerImagem.dataset.basePath = `imagens/tema_${item.id}`;
     btnVerImagem.dataset.temImagem = 'sim';
   } else {
     btnVerImagem.dataset.temImagem = 'nao';
@@ -929,6 +932,7 @@ function atualizarCard(animar, direcao) {
   if (item.imgItem === 'sim') {
     const srcItem = `imagens/item_${item.id}.png`;
     imgItem.src = srcItem;
+    imgItem.dataset.basePath = `imagens/item_${item.id}`;
     imgItem.style.display = 'block';
     configurarRetryImagem(imgItem, srcItem);
   } else {
@@ -1133,14 +1137,73 @@ window.voltarAoMenu = function() {
   }
 };
 
+const VIDEO_EXTS = ['.mp4', '.webm', '.mov', '.avi'];
+
+function isVideo(src) {
+  return VIDEO_EXTS.some(ext => src.toLowerCase().endsWith(ext));
+}
+
+function abrirMidia(src) {
+  const lb      = document.getElementById('lightbox');
+  const img     = document.getElementById('lightbox-img');
+  const video   = document.getElementById('lightbox-video');
+
+  if (isVideo(src)) {
+    img.style.display   = 'none';
+    img.src             = '';
+    video.style.display = 'block';
+    video.src           = src;
+    video.play();
+  } else {
+    video.style.display = 'none';
+    video.pause();
+    video.src           = '';
+    img.style.display   = 'block';
+    img.src             = src;
+  }
+  lb.classList.add('active');
+}
+
+// Tenta extensões automaticamente
+async function abrirMidiaAuto(basePath) {
+  const exts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.mov'];
+
+  for (const ext of exts) {
+    const url = basePath + ext;
+    const ok = await new Promise(resolve => {
+      if (VIDEO_EXTS.includes(ext)) {
+        const v = document.createElement('video');
+        v.onloadeddata = () => resolve(true);
+        v.onerror      = () => resolve(false);
+        v.src          = url;
+      } else {
+        const i = new Image();
+        i.onload  = () => resolve(true);
+        i.onerror = () => resolve(false);
+        i.src     = url;
+      }
+    });
+    if (ok) { abrirMidia(url); return; }
+  }
+  toast('Mídia não encontrada');
+}
+
 window.abrirLightbox = function(e, src) {
   e.stopPropagation();
-  document.getElementById('lightbox-img').src = src;
-  document.getElementById('lightbox').classList.add('active');
+  abrirMidia(src);
+};
+
+window.abrirLightboxAuto = function(e, basePath) {
+  e.stopPropagation();
+  abrirMidiaAuto(basePath);
 };
 
 window.fecharLightbox = function() {
-  document.getElementById('lightbox').classList.remove('active');
+  const lb    = document.getElementById('lightbox');
+  const video = document.getElementById('lightbox-video');
+  lb.classList.remove('active');
+  video.pause();
+  video.src = '';
   document.getElementById('lightbox-img').src = '';
 };
 
