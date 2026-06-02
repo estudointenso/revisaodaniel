@@ -614,7 +614,11 @@ let usuarioAtual = null;
 
 // ── UTILITÁRIOS ─────────────────────────────────────────────────
 function hojeStr() {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const d = new Date();
+  const ano = d.getFullYear();
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const dia = String(d.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`; // YYYY-MM-DD no horário local
 }
 
 function hojeDate() {
