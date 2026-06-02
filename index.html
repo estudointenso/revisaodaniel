@@ -482,6 +482,9 @@
       <div class="card-face card-back">
         <div class="card-face-content" id="card-text">—</div>
         <img class="card-img" id="card-img-item" src="" alt="" style="display:none" onclick="abrirLightboxAuto(event, this.dataset.basePath)">
+        <div id="btn-ver-item-wrap" style="display:none; text-align:center; margin-top:12px;">
+          <button class="btn" style="background:var(--green); color:#fff;" onclick="abrirLightboxAuto(event, document.getElementById('btn-ver-item-wrap').dataset.basePath)">▶ VER VÍDEO</button>
+        </div>
       </div>
     </div>
   </div>
@@ -929,19 +932,33 @@ function atualizarCard(animar, direcao) {
   btnVerImagem.style.display = btnVerImagem.dataset.temImagem === 'sim' ? 'block' : 'none';
 
   const imgItem = document.getElementById('card-img-item');
+  const btnVerItemWrap = document.getElementById('btn-ver-item-wrap');
+  imgItem.src = '';
+  imgItem.style.display = 'none';
+  imgItem.onerror = null;
+  imgItem.onload = null;
+  const retryBtn = imgItem.parentElement.querySelector('.img-retry-btn');
+  if (retryBtn) retryBtn.remove();
+  btnVerItemWrap.style.display = 'none';
+
   if (item.imgItem === 'sim') {
-    const srcItem = `imagens/item_${item.id}.png`;
-    imgItem.src = srcItem;
-    imgItem.dataset.basePath = `imagens/item_${item.id}`;
-    imgItem.style.display = 'block';
-    configurarRetryImagem(imgItem, srcItem);
-  } else {
-    imgItem.src = '';
-    imgItem.style.display = 'none';
-    imgItem.onerror = null;
-    imgItem.onload = null;
-    const retryBtn = imgItem.parentElement.querySelector('.img-retry-btn');
-    if (retryBtn) retryBtn.remove();
+    const basePath = `imagens/item_${item.id}`;
+    btnVerItemWrap.dataset.basePath = basePath;
+
+    // Tenta carregar PNG primeiro
+    const testImg = new Image();
+    testImg.onload = function() {
+      // PNG existe — mostra dentro do card
+      imgItem.src = basePath + '.png';
+      imgItem.dataset.basePath = basePath;
+      imgItem.style.display = 'block';
+      configurarRetryImagem(imgItem, basePath + '.png');
+    };
+    testImg.onerror = function() {
+      // PNG não existe — provavelmente é vídeo, mostra botão verde
+      btnVerItemWrap.style.display = 'block';
+    };
+    testImg.src = basePath + '.png';
   }
 
   const rev = parseInt(item.totalRevisoes) || 0;
