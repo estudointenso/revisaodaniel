@@ -299,8 +299,6 @@
     transition: transform .15s, filter .15s;
   }
   .btn-eval:active { transform: scale(0.95); }
-  .btn-eval .eval-icon { font-size: 28px; }
-  .btn-eval .eval-label { font-size: 18px; }
   .btn-lembrei { background: var(--green-bg); border: 1.5px solid var(--green-border); color: var(--green); }
   .btn-lembrei:active { filter: brightness(1.2); }
   .btn-nao-lembrei { background: var(--red-bg); border: 1.5px solid var(--red-border); color: var(--red); }
@@ -624,7 +622,7 @@ function hojeStr() {
   const ano = d.getFullYear();
   const mes = String(d.getMonth() + 1).padStart(2, '0');
   const dia = String(d.getDate()).padStart(2, '0');
-  return `${ano}-${mes}-${dia}`; // YYYY-MM-DD no horário local
+  return `${ano}-${mes}-${dia}`;
 }
 
 function hojeDate() {
@@ -739,20 +737,23 @@ async function carregarItens() {
     if (ur.getTime() === hoje.getTime()) idsHoje.add(String(item.id));
   });
 
-  const vencidos = [];
-  const futuros  = [];
+  // ── MUDANÇA 1: sem teto — carrega tudo que resta após o teto diário ──
+  // Separa elegíveis (ativos e não revisados hoje)
+  const elegiveis = todos.filter(item => {
+    if (!item.id) return false;
+    if (item.status !== 'Ativo') return false;
+    if (idsHoje.has(String(item.id))) return false;
+    return true;
+  });
 
-  todos.forEach(item => {
-    if (!item.id) return;
-    if (item.status !== 'Ativo') return;
-    if (idsHoje.has(String(item.id))) return;
+  // ── MUDANÇA 2: itens NOVOS têm prioridade absoluta ──
+  // Novos = totalRevisoes === 0, independente da data de proximaRevisao
+  const novos    = [];
+  const vencidos = []; // revisados, proximaRevisao <= hoje
+  const futuros  = []; // revisados, proximaRevisao > hoje
 
-    const proxRaw = item.proximaRevisao
-      ? (item.proximaRevisao.toDate ? item.proximaRevisao.toDate() : new Date(item.proximaRevisao))
-      : hoje;
-    const prox = new Date(proxRaw);
-    prox.setHours(0, 0, 0, 0);
-
+  elegiveis.forEach(item => {
+    const rev = parseInt(item.totalRevisoes) || 0;
     const base = {
       docId: item.docId,
       id: item.id,
@@ -764,35 +765,38 @@ async function carregarItens() {
       imgItem: item.imgItem || ''
     };
 
-    if (prox <= hoje) {
-      const atraso = Math.floor((hoje - prox) / 86400000);
-      vencidos.push({ ...base, atraso });
+    if (rev === 0) {
+      // Nunca revisado — prioridade máxima
+      novos.push(base);
     } else {
-      const diasAdiantado = Math.floor((prox - hoje) / 86400000);
-      futuros.push({ ...base, diasAdiantado });
+      const proxRaw = item.proximaRevisao
+        ? (item.proximaRevisao.toDate ? item.proximaRevisao.toDate() : new Date(item.proximaRevisao))
+        : hoje;
+      const prox = new Date(proxRaw);
+      prox.setHours(0, 0, 0, 0);
+
+      if (prox <= hoje) {
+        const atraso = Math.floor((hoje - prox) / 86400000);
+        vencidos.push({ ...base, atraso });
+      } else {
+        const diasAdiantado = Math.floor((prox - hoje) / 86400000);
+        futuros.push({ ...base, diasAdiantado });
+      }
     }
   });
 
-  vencidos.sort((a, b) => {
-    const aN = (parseInt(a.totalRevisoes) || 0) === 0 ? 1 : 0;
-    const bN = (parseInt(b.totalRevisoes) || 0) === 0 ? 1 : 0;
-    if (bN !== aN) return bN - aN;
-    return b.atraso - a.atraso;
-  });
+  // Ordena novos por ID (ordem de cadastro)
+  novos.sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
+
+  // Ordena vencidos por atraso decrescente (mais atrasado primeiro)
+  vencidos.sort((a, b) => b.atraso - a.atraso);
+
+  // Ordena futuros por menor antecipação (mais próximo primeiro)
   futuros.sort((a, b) => a.diasAdiantado - b.diasAdiantado);
 
-  const tetoRestante = Math.max(0, TETO_DIARIO - idsHoje.size);
-  const sessao = vencidos.slice(0, tetoRestante);
-
-  if (sessao.length < tetoRestante) {
-    const faltam = tetoRestante - sessao.length;
-    const idsJa = new Set(sessao.map(i => String(i.id)));
-    let adicionados = 0;
-    for (const f of futuros) {
-      if (adicionados >= faltam) break;
-      if (!idsJa.has(String(f.id))) { sessao.push(f); adicionados++; }
-    }
-  }
+  // Sessão: novos primeiro, depois vencidos, depois futuros
+  // Sem teto: o usuário pode revisar tudo que existe
+  const sessao = [...novos, ...vencidos, ...futuros];
 
   itens = sessao;
   idx = 0;
@@ -855,7 +859,6 @@ async function processarAvaliacao(item, avaliacao) {
     totalErros
   });
 
-  // Atualiza histórico incremental
   await atualizarHistoricoIncremental(avaliacao);
 }
 
@@ -888,7 +891,7 @@ async function getHistorico() {
     const h = d.data();
     const total = (h.lembrei || 0) + (h.naoLembrei || 0);
     historico.push({
-      data: h.data, // YYYY-MM-DD
+      data: h.data,
       pct: Math.min(100, Math.round((total / TETO_DIARIO) * 100)),
       lembrei: h.lembrei || 0,
       naoLembrei: h.naoLembrei || 0
@@ -945,17 +948,14 @@ function atualizarCard(animar, direcao) {
     const basePath = `imagens/item_${item.id}`;
     btnVerItemWrap.dataset.basePath = basePath;
 
-    // Tenta carregar PNG primeiro
     const testImg = new Image();
     testImg.onload = function() {
-      // PNG existe — mostra dentro do card
       imgItem.src = basePath + '.png';
       imgItem.dataset.basePath = basePath;
       imgItem.style.display = 'block';
       configurarRetryImagem(imgItem, basePath + '.png');
     };
     testImg.onerror = function() {
-      // PNG não existe — provavelmente é vídeo, mostra botão verde
       btnVerItemWrap.style.display = 'block';
     };
     testImg.src = basePath + '.png';
@@ -1026,7 +1026,6 @@ window.avaliar = async function(resp) {
 
   resultados.push({ id: item.id, avaliacao });
 
-  // Persiste no Firestore em background
   processarAvaliacao(item, avaliacao).catch(() => {});
 
   const isUltimo = (idx + 1) >= itens.length;
@@ -1105,7 +1104,7 @@ function renderizarHistorico(historico) {
   for (let i = 6; i >= 0; i--) {
     const dia = new Date(hoje);
     dia.setDate(hoje.getDate() - i);
-    const dataStr = `${dia.getFullYear()}-${String(dia.getMonth()+1).padStart(2,'0')}-${String(dia.getDate()).padStart(2,'0')}`; // YYYY-MM-DD local
+    const dataStr = `${dia.getFullYear()}-${String(dia.getMonth()+1).padStart(2,'0')}-${String(dia.getDate()).padStart(2,'0')}`;
     const label   = `${String(dia.getDate()).padStart(2,'0')}/${String(dia.getMonth()+1).padStart(2,'0')}`;
     const h = historico.find(x => x.data === dataStr);
 
@@ -1181,7 +1180,6 @@ function abrirMidia(src) {
   lb.classList.add('active');
 }
 
-// Tenta extensões automaticamente
 async function abrirMidiaAuto(basePath) {
   const exts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.mov'];
 
