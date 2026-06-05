@@ -75,7 +75,6 @@
     padding: 14px;
   }
 
-  /* LOADING */
   #screen-loading { justify-content: center; align-items: center; gap: 20px; text-align: center; }
   .spinner {
     width: 48px; height: 48px;
@@ -87,7 +86,6 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   #screen-loading p { color: var(--text-muted); font-size: 20px; }
 
-  /* LOGIN */
   #screen-login {
     justify-content: center;
     align-items: center;
@@ -121,7 +119,6 @@
   .btn-google:active { transform: scale(0.97); opacity: .85; }
   .btn-google img { width: 24px; height: 24px; }
 
-  /* REVIEW */
   #screen-review { gap: 0; padding-bottom: 0; overflow-y: auto; }
 
   .review-header {
@@ -304,7 +301,6 @@
   .btn-nao-lembrei { background: var(--red-bg); border: 1.5px solid var(--red-border); color: var(--red); }
   .btn-nao-lembrei:active { filter: brightness(1.2); }
 
-  /* SUMMARY */
   #screen-summary {
     gap: 14px;
     padding-top: 32px;
@@ -433,13 +429,11 @@
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="screen active" id="screen-loading">
   <div class="spinner"></div>
   <p id="loading-msg">Carregando…</p>
 </div>
 
-<!-- LOGIN -->
 <div class="screen" id="screen-login">
   <h1>Revisão Daniel</h1>
   <p>Entre com sua conta Google para continuar</p>
@@ -449,7 +443,6 @@
   </button>
 </div>
 
-<!-- INÍCIO -->
 <div class="screen" id="screen-inicio">
   <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:24px;">
     <h2 style="font-family:'DM Serif Display',serif; font-size:48px; color:var(--accent);">Revisão Daniel</h2>
@@ -462,7 +455,6 @@
   </div>
 </div>
 
-<!-- REVIEW -->
 <div class="screen" id="screen-review">
   <div class="review-header">
     <div class="review-counter"><span id="counter-atual">1</span> de <span id="counter-total">0</span></div>
@@ -504,7 +496,6 @@
   </div>
 </div>
 
-<!-- SUMMARY -->
 <div class="screen" id="screen-summary">
   <div class="summary-header">
     <h2 id="summary-emoji">✅ Revisão concluída!</h2>
@@ -544,7 +535,6 @@
   </div>
 </div>
 
-<!-- ERRO -->
 <div class="screen" id="screen-erro">
   <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:24px; text-align:center; padding:0 32px;">
     <div style="font-size:64px;">⚠️</div>
@@ -566,31 +556,15 @@
 <div id="block-overlay"></div>
 <div class="toast" id="toast"></div>
 
-<!-- FIREBASE SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signOut
+  getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  setDoc,
-  getDoc,
-  query,
-  where,
-  orderBy,
-  Timestamp
+  getFirestore, collection, getDocs, doc, updateDoc, setDoc, getDoc, query, where, orderBy, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ── CONFIG ──────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyC8Dg8s-W6R8aWXUG4T41gxg-CsUWvMipw",
   authDomain: "revisaodaniel-7b75a.firebaseapp.com",
@@ -601,12 +575,11 @@ const firebaseConfig = {
   measurementId: "G-M5YGQK1HB3"
 };
 
-const app     = initializeApp(firebaseConfig);
-const auth    = getAuth(app);
-const db      = getFirestore(app);
+const app      = initializeApp(firebaseConfig);
+const auth     = getAuth(app);
+const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// ── ESTADO ──────────────────────────────────────────────────────
 const TETO_DIARIO = 40;
 let itens = [];
 let idx = 0;
@@ -616,35 +589,24 @@ let animando = false;
 let sessaoConcluida = false;
 let usuarioAtual = null;
 
-// ── UTILITÁRIOS ─────────────────────────────────────────────────
 function hojeStr() {
   const d = new Date();
-  const ano = d.getFullYear();
-  const mes = String(d.getMonth() + 1).padStart(2, '0');
-  const dia = String(d.getDate()).padStart(2, '0');
-  return `${ano}-${mes}-${dia}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-
 function hojeDate() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+  const d = new Date(); d.setHours(0,0,0,0); return d;
 }
-
 function mostrarTela(id) {
   document.getElementById('block-overlay').classList.remove('active');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById(id).scrollTop = 0;
 }
-
 function toast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-
 function configurarRetryImagem(imgElement, srcOriginal) {
   imgElement.onerror = function() {
     this.style.display = 'none';
@@ -655,8 +617,7 @@ function configurarRetryImagem(imgElement, srcOriginal) {
       retryBtn.className = 'img-retry-btn';
       retryBtn.innerHTML = '🔄 Tentar carregar imagem';
       retryBtn.onclick = (e) => {
-        e.stopPropagation();
-        retryBtn.remove();
+        e.stopPropagation(); retryBtn.remove();
         imgElement.style.display = 'block';
         imgElement.src = srcOriginal + '?t=' + Date.now();
       };
@@ -670,58 +631,41 @@ function configurarRetryImagem(imgElement, srcOriginal) {
   };
 }
 
-// ── AUTH ─────────────────────────────────────────────────────────
 window.fazerLogin = async function() {
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-
     const emailDoc = await getDoc(doc(db, 'authorized_emails', user.email));
     if (!emailDoc.exists() || !emailDoc.data().authorized) {
-      await signOut(auth);
-      mostrarTela('screen-login');
+      await signOut(auth); mostrarTela('screen-login');
       alert(`🔒 Acesso negado.\n\nO e-mail "${user.email}" não tem permissão para acessar este app.`);
       return;
     }
-  } catch (e) {
-    toast('Erro ao fazer login');
-  }
+  } catch (e) { toast('Erro ao fazer login'); }
 };
+window.fazerLogout = async function() { await signOut(auth); mostrarTela('screen-login'); };
 
-window.fazerLogout = async function() {
-  await signOut(auth);
-  mostrarTela('screen-login');
-};
-
-// ── INICIALIZAÇÃO ─────────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     const emailDoc = await getDoc(doc(db, 'authorized_emails', user.email));
     if (!emailDoc.exists() || !emailDoc.data().authorized) {
-      await signOut(auth);
-      mostrarTela('screen-login');
-      return;
+      await signOut(auth); mostrarTela('screen-login'); return;
     }
     usuarioAtual = user;
     await inicializarApp();
   } else {
-    usuarioAtual = null;
-    mostrarTela('screen-login');
+    usuarioAtual = null; mostrarTela('screen-login');
   }
 });
 
 async function inicializarApp() {
   mostrarTela('screen-loading');
   document.getElementById('loading-msg').textContent = 'Carregando itens do dia…';
-  try {
-    await carregarItens();
-  } catch (e) {
-    mostrarTela('screen-erro');
-  }
+  try { await carregarItens(); } catch (e) { mostrarTela('screen-erro'); }
 }
 window.inicializarApp = inicializarApp;
 
-// ── FIRESTORE: LER ITENS ──────────────────────────────────────────
+// ── CARREGAR ITENS ────────────────────────────────────────────────
 async function carregarItens() {
   const hoje = hojeDate();
   const snap = await getDocs(collection(db, 'itens'));
@@ -733,12 +677,11 @@ async function carregarItens() {
   todos.forEach(item => {
     if (!item.ultimaRevisao) return;
     const ur = item.ultimaRevisao.toDate ? item.ultimaRevisao.toDate() : new Date(item.ultimaRevisao);
-    ur.setHours(0, 0, 0, 0);
+    ur.setHours(0,0,0,0);
     if (ur.getTime() === hoje.getTime()) idsHoje.add(String(item.id));
   });
 
-  // ── MUDANÇA 1: sem teto — carrega tudo que resta após o teto diário ──
-  // Separa elegíveis (ativos e não revisados hoje)
+  // Elegíveis: ativos e não revisados hoje
   const elegiveis = todos.filter(item => {
     if (!item.id) return false;
     if (item.status !== 'Ativo') return false;
@@ -746,57 +689,48 @@ async function carregarItens() {
     return true;
   });
 
-  // ── MUDANÇA 2: itens NOVOS têm prioridade absoluta ──
-  // Novos = totalRevisoes === 0, independente da data de proximaRevisao
+  // Separa em 3 grupos com prioridade: novos > vencidos > futuros
   const novos    = [];
-  const vencidos = []; // revisados, proximaRevisao <= hoje
-  const futuros  = []; // revisados, proximaRevisao > hoje
+  const vencidos = [];
+  const futuros  = [];
 
   elegiveis.forEach(item => {
     const rev = parseInt(item.totalRevisoes) || 0;
     const base = {
-      docId: item.docId,
-      id: item.id,
-      tema: item.tema,
-      item: item.item,
-      ef: item.fatorFacilidade || 2.5,
-      totalRevisoes: item.totalRevisoes || 0,
-      imgTema: item.imgTema || '',
-      imgItem: item.imgItem || ''
+      docId: item.docId, id: item.id, tema: item.tema, item: item.item,
+      ef: item.fatorFacilidade || 2.5, totalRevisoes: item.totalRevisoes || 0,
+      imgTema: item.imgTema || '', imgItem: item.imgItem || ''
     };
 
     if (rev === 0) {
-      // Nunca revisado — prioridade máxima
+      // Nunca revisado — prioridade máxima, independente de data
       novos.push(base);
     } else {
       const proxRaw = item.proximaRevisao
         ? (item.proximaRevisao.toDate ? item.proximaRevisao.toDate() : new Date(item.proximaRevisao))
         : hoje;
-      const prox = new Date(proxRaw);
-      prox.setHours(0, 0, 0, 0);
-
+      const prox = new Date(proxRaw); prox.setHours(0,0,0,0);
       if (prox <= hoje) {
-        const atraso = Math.floor((hoje - prox) / 86400000);
-        vencidos.push({ ...base, atraso });
+        vencidos.push({ ...base, atraso: Math.floor((hoje - prox) / 86400000) });
       } else {
-        const diasAdiantado = Math.floor((prox - hoje) / 86400000);
-        futuros.push({ ...base, diasAdiantado });
+        futuros.push({ ...base, diasAdiantado: Math.floor((prox - hoje) / 86400000) });
       }
     }
   });
 
-  // Ordena novos por ID (ordem de cadastro)
   novos.sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
-
-  // Ordena vencidos por atraso decrescente (mais atrasado primeiro)
   vencidos.sort((a, b) => b.atraso - a.atraso);
-
-  // Ordena futuros por menor antecipação (mais próximo primeiro)
   futuros.sort((a, b) => a.diasAdiantado - b.diasAdiantado);
 
-  // Sessão: novos primeiro, depois vencidos, depois futuros
-  // Sem teto: o usuário pode revisar tudo que existe
-  const sessao = [...novos, ...vencidos, ...futuros];
+  // ── LÓGICA DO TETO ──────────────────────────────────────────────
+  // Se ainda não atingiu os 40 obrigatórios: limita a sessão ao restante do teto
+  // Se já passou dos 40: libera tudo sem limite (modo bônus)
+  const jaFeitos = idsHoje.size;
+  const faltamParaTeto = Math.max(0, TETO_DIARIO - jaFeitos);
+  const semTeto = jaFeitos >= TETO_DIARIO;
+
+  const candidatos = [...novos, ...vencidos, ...futuros];
+  const sessao = semTeto ? candidatos : candidatos.slice(0, faltamParaTeto);
 
   itens = sessao;
   idx = 0;
@@ -804,12 +738,11 @@ async function carregarItens() {
 
   // Mensagem do dia anterior
   const historico = await getHistorico();
-  const ontem = new Date();
-  ontem.setDate(ontem.getDate() - 1);
+  const ontem = new Date(); ontem.setDate(ontem.getDate() - 1);
   const ontemStr = `${ontem.getFullYear()}-${String(ontem.getMonth()+1).padStart(2,'0')}-${String(ontem.getDate()).padStart(2,'0')}`;
   const diaAnterior = historico.find(h => h.data === ontemStr);
 
-  let msgInicio = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  let msgInicio = new Date().toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
   if (diaAnterior && diaAnterior.pct > 0) {
     const dataFmt = `${String(ontem.getDate()).padStart(2,'0')}/${String(ontem.getMonth()+1).padStart(2,'0')}/${ontem.getFullYear()}`;
     let frase = '';
@@ -823,12 +756,12 @@ async function carregarItens() {
   mostrarTela('screen-inicio');
 }
 
-// ── SM-2: PROCESSAR AVALIAÇÃO ─────────────────────────────────────
+// ── SM-2 ──────────────────────────────────────────────────────────
 async function processarAvaliacao(item, avaliacao) {
-  let ef            = parseFloat(item.ef)            || 2.5;
-  let intervalo     = parseInt(item.intervalo)        || 1;
-  let totalRevisoes = parseInt(item.totalRevisoes)    || 0;
-  let totalErros    = parseInt(item.totalErros)       || 0;
+  let ef            = parseFloat(item.ef)         || 2.5;
+  let intervalo     = parseInt(item.intervalo)     || 1;
+  let totalRevisoes = parseInt(item.totalRevisoes) || 0;
+  let totalErros    = parseInt(item.totalErros)    || 0;
 
   if (avaliacao === 'Decorei') {
     if (totalRevisoes === 0)      intervalo = 1;
@@ -836,51 +769,34 @@ async function processarAvaliacao(item, avaliacao) {
     else                          intervalo = Math.round(intervalo * ef);
     ef = Math.min(2.5, Math.max(1.3, ef + 0.1));
   } else {
-    intervalo = 1;
-    ef = Math.max(1.3, ef - 0.2);
-    totalErros++;
+    intervalo = 1; ef = Math.max(1.3, ef - 0.2); totalErros++;
   }
   totalRevisoes++;
 
-  const proxRevisao = new Date();
-  proxRevisao.setHours(0, 0, 0, 0);
+  const proxRevisao = new Date(); proxRevisao.setHours(0,0,0,0);
   proxRevisao.setDate(proxRevisao.getDate() + intervalo);
 
-  const hoje = hojeDate();
-
-  const ref = doc(db, 'itens', item.docId);
-  await updateDoc(ref, {
+  await updateDoc(doc(db, 'itens', item.docId), {
     proximaRevisao:  Timestamp.fromDate(proxRevisao),
-    ultimaRevisao:   Timestamp.fromDate(hoje),
+    ultimaRevisao:   Timestamp.fromDate(hojeDate()),
     ultimoResultado: avaliacao,
     intervaloDias:   intervalo,
     fatorFacilidade: parseFloat(ef.toFixed(2)),
-    totalRevisoes,
-    totalErros
+    totalRevisoes, totalErros
   });
-
   await atualizarHistoricoIncremental(avaliacao);
 }
 
-// ── HISTÓRICO ─────────────────────────────────────────────────────
 async function atualizarHistoricoIncremental(avaliacao) {
   const hoje = hojeStr();
   const ref = doc(db, 'historico', hoje);
   const snap = await getDoc(ref);
-
   if (snap.exists()) {
     const data = snap.data();
-    if (avaliacao === 'Decorei') {
-      await updateDoc(ref, { lembrei: (data.lembrei || 0) + 1 });
-    } else {
-      await updateDoc(ref, { naoLembrei: (data.naoLembrei || 0) + 1 });
-    }
+    if (avaliacao === 'Decorei') await updateDoc(ref, { lembrei: (data.lembrei||0)+1 });
+    else                         await updateDoc(ref, { naoLembrei: (data.naoLembrei||0)+1 });
   } else {
-    await setDoc(ref, {
-      data: hoje,
-      lembrei:    avaliacao === 'Decorei' ? 1 : 0,
-      naoLembrei: avaliacao === 'Decorei' ? 0 : 1
-    });
+    await setDoc(ref, { data: hoje, lembrei: avaliacao==='Decorei'?1:0, naoLembrei: avaliacao==='Decorei'?0:1 });
   }
 }
 
@@ -889,29 +805,18 @@ async function getHistorico() {
   const historico = [];
   snap.forEach(d => {
     const h = d.data();
-    const total = (h.lembrei || 0) + (h.naoLembrei || 0);
-    historico.push({
-      data: h.data,
-      pct: Math.min(100, Math.round((total / TETO_DIARIO) * 100)),
-      lembrei: h.lembrei || 0,
-      naoLembrei: h.naoLembrei || 0
-    });
+    const total = (h.lembrei||0) + (h.naoLembrei||0);
+    historico.push({ data: h.data, pct: Math.min(100, Math.round((total/TETO_DIARIO)*100)), lembrei: h.lembrei||0, naoLembrei: h.naoLembrei||0 });
   });
-  historico.sort((a, b) => a.data.localeCompare(b.data));
+  historico.sort((a,b) => a.data.localeCompare(b.data));
   return historico;
 }
 
 // ── REVISÃO ───────────────────────────────────────────────────────
-function iniciarRevisao() {
-  mostrarTela('screen-review');
-  atualizarCard(false, 'right');
-}
+function iniciarRevisao() { mostrarTela('screen-review'); atualizarCard(false, 'right'); }
 
 window.iniciarRevisaoDiaria = function() {
-  if (!itens || itens.length === 0) {
-    inicializarApp();
-    return;
-  }
+  if (!itens || itens.length === 0) { inicializarApp(); return; }
   iniciarRevisao();
 };
 
@@ -922,24 +827,19 @@ function atualizarCard(animar, direcao) {
   document.getElementById('counter-atual').textContent = idx + 1;
   document.getElementById('counter-total').textContent = total;
   document.getElementById('progress-fill').style.width = ((idx / total) * 100) + '%';
-  document.getElementById('card-tema').innerHTML = (item.tema || '—').replace(/\n/g, '<br>');
-  document.getElementById('card-text').innerHTML = (item.item || '').replace(/\n/g, '<br>');
+  document.getElementById('card-tema').innerHTML = (item.tema || '—').replace(/\n/g,'<br>');
+  document.getElementById('card-text').innerHTML = (item.item || '').replace(/\n/g,'<br>');
 
   const btnVerImagem = document.getElementById('btn-ver-imagem-wrap');
   if (item.imgTema === 'sim') {
     btnVerImagem.dataset.basePath = `imagens/tema_${item.id}`;
     btnVerImagem.dataset.temImagem = 'sim';
-  } else {
-    btnVerImagem.dataset.temImagem = 'nao';
-  }
+  } else { btnVerImagem.dataset.temImagem = 'nao'; }
   btnVerImagem.style.display = btnVerImagem.dataset.temImagem === 'sim' ? 'block' : 'none';
 
   const imgItem = document.getElementById('card-img-item');
   const btnVerItemWrap = document.getElementById('btn-ver-item-wrap');
-  imgItem.src = '';
-  imgItem.style.display = 'none';
-  imgItem.onerror = null;
-  imgItem.onload = null;
+  imgItem.src = ''; imgItem.style.display = 'none'; imgItem.onerror = null; imgItem.onload = null;
   const retryBtn = imgItem.parentElement.querySelector('.img-retry-btn');
   if (retryBtn) retryBtn.remove();
   btnVerItemWrap.style.display = 'none';
@@ -947,17 +847,12 @@ function atualizarCard(animar, direcao) {
   if (item.imgItem === 'sim') {
     const basePath = `imagens/item_${item.id}`;
     btnVerItemWrap.dataset.basePath = basePath;
-
     const testImg = new Image();
     testImg.onload = function() {
-      imgItem.src = basePath + '.png';
-      imgItem.dataset.basePath = basePath;
-      imgItem.style.display = 'block';
-      configurarRetryImagem(imgItem, basePath + '.png');
+      imgItem.src = basePath + '.png'; imgItem.dataset.basePath = basePath;
+      imgItem.style.display = 'block'; configurarRetryImagem(imgItem, basePath + '.png');
     };
-    testImg.onerror = function() {
-      btnVerItemWrap.style.display = 'block';
-    };
+    testImg.onerror = function() { btnVerItemWrap.style.display = 'block'; };
     testImg.src = basePath + '.png';
   }
 
@@ -977,18 +872,14 @@ function atualizarCard(animar, direcao) {
   document.getElementById('eval-buttons').classList.add('hidden');
   cardVirado = false;
   const flipCard = document.getElementById('flip-card');
-
   if (animar) {
     const enterClass = direcao === 'right' ? 'enter-right' : 'enter-left';
-    flipCard.classList.add(enterClass);
-    flipCard.classList.remove('flipped');
+    flipCard.classList.add(enterClass); flipCard.classList.remove('flipped');
     void flipCard.offsetWidth;
     setTimeout(() => { flipCard.classList.remove(enterClass); flipCard.style.transition = ''; }, 30);
   } else {
-    flipCard.classList.remove('flipped');
-    flipCard.style.transition = 'none';
-    void flipCard.offsetWidth;
-    flipCard.style.transition = '';
+    flipCard.classList.remove('flipped'); flipCard.style.transition = 'none';
+    void flipCard.offsetWidth; flipCard.style.transition = '';
   }
 }
 
@@ -997,16 +888,12 @@ window.virarCard = function() {
   animando = true;
   const flipCard = document.getElementById('flip-card');
   const evalBtns = document.getElementById('eval-buttons');
-
   if (!cardVirado) {
-    cardVirado = true;
-    flipCard.classList.add('flipped');
+    cardVirado = true; flipCard.classList.add('flipped');
     document.getElementById('btn-ver-imagem-wrap').style.display = 'none';
     setTimeout(() => { animando = false; evalBtns.classList.remove('hidden'); }, 350);
   } else {
-    cardVirado = false;
-    flipCard.classList.remove('flipped');
-    evalBtns.classList.add('hidden');
+    cardVirado = false; flipCard.classList.remove('flipped'); evalBtns.classList.add('hidden');
     setTimeout(() => {
       animando = false;
       const bvi = document.getElementById('btn-ver-imagem-wrap');
@@ -1018,30 +905,19 @@ window.virarCard = function() {
 window.avaliar = async function(resp) {
   if (animando) return;
   animando = true;
-
   const item      = itens[idx];
   const flipCard  = document.getElementById('flip-card');
   const evalBtns  = document.getElementById('eval-buttons');
   const avaliacao = resp === 'sim' ? 'Decorei' : 'Repetir';
-
   resultados.push({ id: item.id, avaliacao });
-
   processarAvaliacao(item, avaliacao).catch(() => {});
-
-  const isUltimo = (idx + 1) >= itens.length;
-  if (isUltimo) {
-    sessaoConcluida = true;
-  }
-
+  if ((idx + 1) >= itens.length) sessaoConcluida = true;
   evalBtns.classList.add('hidden');
   flipCard.style.transition = 'transform .22s ease, opacity .22s ease';
   flipCard.classList.add('exit-left');
-
   setTimeout(async () => {
-    flipCard.classList.remove('exit-left');
-    flipCard.style.transition = '';
-    animando = false;
-    idx++;
+    flipCard.classList.remove('exit-left'); flipCard.style.transition = '';
+    animando = false; idx++;
     if (idx >= itens.length) await mostrarResumo();
     else atualizarCard(true, 'right');
   }, 230);
@@ -1051,11 +927,9 @@ window.avaliar = async function(resp) {
 window.mostrarResumo = async function() {
   mostrarTela('screen-loading');
   document.getElementById('loading-msg').textContent = 'Calculando aproveitamento…';
-
   const historico = await getHistorico();
   const hoje = hojeStr();
   const h = historico.find(x => x.data === hoje);
-
   const lembrei = h ? h.lembrei : 0;
   const nao     = h ? h.naoLembrei : 0;
   const total   = lembrei + nao;
@@ -1064,164 +938,83 @@ window.mostrarResumo = async function() {
   document.getElementById('stat-lembrei').textContent = total > 0 ? lembrei : '—';
   document.getElementById('stat-nao').textContent     = total > 0 ? nao     : '—';
   document.getElementById('pct-valor').textContent    = total > 0 ? pct + '%' : '—';
-  document.getElementById('summary-data').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('summary-data').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
   document.getElementById('summary-emoji').textContent = '📊 HISTÓRICO';
   document.getElementById('pct-msg').textContent = '';
-  document.getElementById('sync-status').innerHTML = total > 0
-    ? '<span style="color:var(--green)">✓ Itens salvos automaticamente</span>'
-    : '';
+  document.getElementById('sync-status').innerHTML = total > 0 ? '<span style="color:var(--green)">✓ Itens salvos automaticamente</span>' : '';
   document.getElementById('btn-voltar-menu').style.display = '';
 
   const barEl = document.getElementById('pct-bar');
   const barColor = pct < 50 ? '#ff5f6d' : pct < 75 ? '#f5a623' : '#2ecc8a';
-  barEl.style.background = barColor;
-  barEl.style.transition = 'none';
-  barEl.style.width = '0%';
-
+  barEl.style.background = barColor; barEl.style.transition = 'none'; barEl.style.width = '0%';
   renderizarHistorico(historico);
   mostrarTela('screen-summary');
-
-  setTimeout(() => {
-    barEl.style.transition = 'width 1s ease';
-    barEl.style.width = (total > 0 ? pct : 0) + '%';
-  }, 100);
+  setTimeout(() => { barEl.style.transition = 'width 1s ease'; barEl.style.width = (total > 0 ? pct : 0) + '%'; }, 100);
 };
 
 function renderizarHistorico(historico) {
   const bloco = document.getElementById('bloco-historico');
   if (!historico || historico.length === 0) { bloco.style.display = 'none'; return; }
   bloco.style.display = 'block';
-
-  const media = Math.round(historico.reduce((acc, h) => acc + h.pct, 0) / historico.length);
+  const media = Math.round(historico.reduce((acc,h) => acc+h.pct, 0) / historico.length);
   const dias  = historico.length;
   document.getElementById('hist-media').textContent = `Média: ${media}%`;
-  document.getElementById('hist-dias').textContent  = `${dias} dia${dias !== 1 ? 's' : ''} de revisão`;
-
-  const barsEl = document.getElementById('hist-bars');
-  barsEl.innerHTML = '';
-
+  document.getElementById('hist-dias').textContent  = `${dias} dia${dias!==1?'s':''} de revisão`;
+  const barsEl = document.getElementById('hist-bars'); barsEl.innerHTML = '';
   const hoje = new Date();
   for (let i = 6; i >= 0; i--) {
-    const dia = new Date(hoje);
-    dia.setDate(hoje.getDate() - i);
+    const dia = new Date(hoje); dia.setDate(hoje.getDate() - i);
     const dataStr = `${dia.getFullYear()}-${String(dia.getMonth()+1).padStart(2,'0')}-${String(dia.getDate()).padStart(2,'0')}`;
     const label   = `${String(dia.getDate()).padStart(2,'0')}/${String(dia.getMonth()+1).padStart(2,'0')}`;
     const h = historico.find(x => x.data === dataStr);
-
-    const wrap = document.createElement('div');
-    wrap.className = 'hist-bar-wrap';
-
-    const pctLabel = document.createElement('div');
-    pctLabel.className = 'hist-bar-label';
-    pctLabel.style.marginBottom = '4px';
-    pctLabel.style.color = 'var(--text-muted)';
+    const wrap = document.createElement('div'); wrap.className = 'hist-bar-wrap';
+    const pctLabel = document.createElement('div'); pctLabel.className = 'hist-bar-label';
+    pctLabel.style.marginBottom = '4px'; pctLabel.style.color = 'var(--text-muted)';
     pctLabel.textContent = h ? `${h.pct}%` : '';
-
-    const bar = document.createElement('div');
-    bar.className = 'hist-bar';
-
+    const bar = document.createElement('div'); bar.className = 'hist-bar';
     if (h) {
-      const cor = h.pct >= 75 ? 'var(--green)' : h.pct >= 50 ? 'var(--orange)' : 'var(--red)';
-      bar.style.background = cor;
-      bar.style.height     = `${Math.max(6, Math.round((h.pct / 100) * 188))}px`;
+      const cor = h.pct>=75 ? 'var(--green)' : h.pct>=50 ? 'var(--orange)' : 'var(--red)';
+      bar.style.background = cor; bar.style.height = `${Math.max(6, Math.round((h.pct/100)*188))}px`;
       pctLabel.style.color = cor;
-    } else {
-      bar.style.background = 'var(--border)';
-      bar.style.height     = '4px';
-    }
-
-    const dayLabel = document.createElement('div');
-    dayLabel.className   = 'hist-bar-label';
-    dayLabel.textContent = label;
-
-    wrap.appendChild(pctLabel);
-    wrap.appendChild(bar);
-    wrap.appendChild(dayLabel);
-    barsEl.appendChild(wrap);
+    } else { bar.style.background = 'var(--border)'; bar.style.height = '4px'; }
+    const dayLabel = document.createElement('div'); dayLabel.className = 'hist-bar-label'; dayLabel.textContent = label;
+    wrap.appendChild(pctLabel); wrap.appendChild(bar); wrap.appendChild(dayLabel); barsEl.appendChild(wrap);
   }
 }
 
 // ── NAVEGAÇÃO ─────────────────────────────────────────────────────
 window.voltarAoMenu = function() {
   document.getElementById('btn-voltar-menu').style.display = 'none';
-  if (sessaoConcluida) {
-    sessaoConcluida = false;
-    itens = [];
-    inicializarApp();
-  } else {
-    mostrarTela('screen-inicio');
-  }
+  if (sessaoConcluida) { sessaoConcluida = false; itens = []; inicializarApp(); }
+  else mostrarTela('screen-inicio');
 };
 
-const VIDEO_EXTS = ['.mp4', '.webm', '.mov', '.avi'];
-
-function isVideo(src) {
-  return VIDEO_EXTS.some(ext => src.toLowerCase().endsWith(ext));
-}
-
+const VIDEO_EXTS = ['.mp4','.webm','.mov','.avi'];
+function isVideo(src) { return VIDEO_EXTS.some(ext => src.toLowerCase().endsWith(ext)); }
 function abrirMidia(src) {
-  const lb      = document.getElementById('lightbox');
-  const img     = document.getElementById('lightbox-img');
-  const video   = document.getElementById('lightbox-video');
-
-  if (isVideo(src)) {
-    img.style.display   = 'none';
-    img.src             = '';
-    video.style.display = 'block';
-    video.src           = src;
-    video.play();
-  } else {
-    video.style.display = 'none';
-    video.pause();
-    video.src           = '';
-    img.style.display   = 'block';
-    img.src             = src;
-  }
+  const lb=document.getElementById('lightbox'), img=document.getElementById('lightbox-img'), video=document.getElementById('lightbox-video');
+  if (isVideo(src)) { img.style.display='none'; img.src=''; video.style.display='block'; video.src=src; video.play(); }
+  else { video.style.display='none'; video.pause(); video.src=''; img.style.display='block'; img.src=src; }
   lb.classList.add('active');
 }
-
 async function abrirMidiaAuto(basePath) {
-  const exts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.mov'];
-
+  const exts=['.png','.jpg','.jpeg','.gif','.webp','.mp4','.webm','.mov'];
   for (const ext of exts) {
-    const url = basePath + ext;
+    const url = basePath+ext;
     const ok = await new Promise(resolve => {
-      if (VIDEO_EXTS.includes(ext)) {
-        const v = document.createElement('video');
-        v.onloadeddata = () => resolve(true);
-        v.onerror      = () => resolve(false);
-        v.src          = url;
-      } else {
-        const i = new Image();
-        i.onload  = () => resolve(true);
-        i.onerror = () => resolve(false);
-        i.src     = url;
-      }
+      if (VIDEO_EXTS.includes(ext)) { const v=document.createElement('video'); v.onloadeddata=()=>resolve(true); v.onerror=()=>resolve(false); v.src=url; }
+      else { const i=new Image(); i.onload=()=>resolve(true); i.onerror=()=>resolve(false); i.src=url; }
     });
     if (ok) { abrirMidia(url); return; }
   }
   toast('Mídia não encontrada');
 }
-
-window.abrirLightbox = function(e, src) {
-  e.stopPropagation();
-  abrirMidia(src);
+window.abrirLightbox     = function(e,src)      { e.stopPropagation(); abrirMidia(src); };
+window.abrirLightboxAuto = function(e,basePath) { e.stopPropagation(); abrirMidiaAuto(basePath); };
+window.fecharLightbox    = function() {
+  const lb=document.getElementById('lightbox'), video=document.getElementById('lightbox-video');
+  lb.classList.remove('active'); video.pause(); video.src=''; document.getElementById('lightbox-img').src='';
 };
-
-window.abrirLightboxAuto = function(e, basePath) {
-  e.stopPropagation();
-  abrirMidiaAuto(basePath);
-};
-
-window.fecharLightbox = function() {
-  const lb    = document.getElementById('lightbox');
-  const video = document.getElementById('lightbox-video');
-  lb.classList.remove('active');
-  video.pause();
-  video.src = '';
-  document.getElementById('lightbox-img').src = '';
-};
-
 </script>
 </body>
 </html>
