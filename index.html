@@ -912,7 +912,20 @@ window.avaliar = async function(resp) {
   const evalBtns  = document.getElementById('eval-buttons');
   const avaliacao = resp === 'sim' ? 'Decorei' : 'Repetir';
   resultados.push({ id: item.id, avaliacao });
+
+  // Feedback visual durante salvamento
+  evalBtns.style.opacity = '0.4';
+  evalBtns.style.pointerEvents = 'none';
+  const toastEl = document.getElementById('toast');
+  toastEl.textContent = '💾 Salvando…';
+  toastEl.classList.add('show');
+
   await processarAvaliacao(item, avaliacao).catch(() => {});
+
+  toastEl.classList.remove('show');
+  evalBtns.style.opacity = '';
+  evalBtns.style.pointerEvents = '';
+
   if ((idx + 1) >= itens.length) sessaoConcluida = true;
   evalBtns.classList.add('hidden');
   flipCard.style.transition = 'transform .22s ease, opacity .22s ease';
