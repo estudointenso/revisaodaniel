@@ -912,7 +912,7 @@ window.avaliar = async function(resp) {
   const evalBtns  = document.getElementById('eval-buttons');
   const avaliacao = resp === 'sim' ? 'Decorei' : 'Repetir';
   resultados.push({ id: item.id, avaliacao });
-  processarAvaliacao(item, avaliacao).catch(() => {});
+  await processarAvaliacao(item, avaliacao).catch(() => {});
   if ((idx + 1) >= itens.length) sessaoConcluida = true;
   evalBtns.classList.add('hidden');
   flipCard.style.transition = 'transform .22s ease, opacity .22s ease';
