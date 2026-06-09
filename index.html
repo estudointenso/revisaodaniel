@@ -480,7 +480,7 @@
       </div>
     </div>
   </div>
-  <div id="btn-ver-imagem-wrap" style="display:none; padding: 8px 0 0; text-align:center;">
+  <div id="btn-ver-imagem-wrap" style="display:none; padding: 8px 0 12px; text-align:center;">
     <button class="btn" style="background:var(--green); color:#fff;" onclick="abrirLightboxAuto(event, document.getElementById('btn-ver-imagem-wrap').dataset.basePath)">VER IMAGEM</button>
   </div>
   <div class="eval-buttons hidden" id="eval-buttons">
@@ -683,11 +683,14 @@ async function carregarItens() {
     if (ur.getTime() === hoje.getTime()) idsHoje.add(String(item.id));
   });
 
-  // Elegíveis: ativos e não revisados hoje
+  // Elegíveis: ativos e não revisados hoje (ou todos se já bateu o teto)
+  const jaFeitos = idsHoje.size;
+  const semTeto = jaFeitos >= TETO_DIARIO;
+
   const elegiveis = todos.filter(item => {
     if (!item.id) return false;
     if (item.status !== 'Ativo') return false;
-    if (idsHoje.has(String(item.id))) return false;
+    if (!semTeto && idsHoje.has(String(item.id))) return false;
     return true;
   });
 
@@ -727,9 +730,7 @@ async function carregarItens() {
   // ── LÓGICA DO TETO ──────────────────────────────────────────────
   // Se ainda não atingiu os 40 obrigatórios: limita a sessão ao restante do teto
   // Se já passou dos 40: libera tudo sem limite (modo bônus)
-  const jaFeitos = idsHoje.size;
   const faltamParaTeto = Math.max(0, TETO_DIARIO - jaFeitos);
-  const semTeto = jaFeitos >= TETO_DIARIO;
 
   const candidatos = [...novos, ...vencidos, ...futuros];
   const sessao = semTeto ? candidatos : candidatos.slice(0, faltamParaTeto);
