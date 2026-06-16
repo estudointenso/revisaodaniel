@@ -741,8 +741,17 @@ async function carregarItens() {
 
   // Mensagem do dia anterior
   const historico = await getHistorico();
-  const ontem = new Date(); ontem.setDate(ontem.getDate() - 1);
+  const ontem = new Date();
+  ontem.setDate(ontem.getDate() - 1);
+  ontem.setHours(0,0,0,0);
   const ontemStr = `${ontem.getFullYear()}-${String(ontem.getMonth()+1).padStart(2,'0')}-${String(ontem.getDate()).padStart(2,'0')}`;
+
+  const ontemSnap = await getDoc(doc(db, 'historico', ontemStr));
+  if (!ontemSnap.exists()) {
+    await setDoc(doc(db, 'historico', ontemStr), {
+      data: ontemStr, lembrei: 0, naoLembrei: 0
+    });
+  }
   const diaAnterior = historico.find(h => h.data === ontemStr);
 
   let msgInicio = new Date().toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
