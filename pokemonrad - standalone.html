@@ -3213,6 +3213,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
+      await loadQuestions();
       const savedMuted = localStorage.getItem('audioMuted');
       if (savedMuted === 'true') {
         audioMuted = true;
