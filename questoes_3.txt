@@ -10957,13 +10957,13 @@ GABARITO: D
 
 QUESTÃO 2992
 https://membox-app-rich-text-image.s3.us-west-2.amazonaws.com/679ff098d91768542555488-image.png
-Paciente de 50 anos, com nódulo palpável na mama esquerda há 3 meses. Sobre os achados de imagem mostrados na mamografia incidência MLO e na ultrassonografia, assinale a alternativa correta.
+Paciente de 50 anos, com nódulo palpável na mama esquerda há 3 meses. Sobre os achados de imagem mostrados na mamografia incidência médio oblíqua lateral (MLO) e ultrassonografia mostrando lesão sólido-cística, assinale a alternativa correta em relação a correta conduta.
 
-A) Cisto complicado, de características provavelmente benignas, indicado controle radiológico em 6 meses.
-B) Cisto simples, se doloroso, punção de alívio está indicada.
+A) Indicado controle radiológico em 6 meses.
+B) Se doloroso, punção de alívio está indicada.
 C) Provável abscesso, tratamento com antibioticoterapia.
-D) Nódulo sólido-cístico, indicado estudo histopatológico.
-E) Nódulo sólido-cístico, indicada ressonância magnética para orientar conduta.
+D) Indicado estudo histopatológico.
+E) Indicada ressonância nuclear magnética para orientar conduta.
 
 GABARITO: D
 
