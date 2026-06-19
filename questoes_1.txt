@@ -332,7 +332,7 @@ https://s3.amazonaws.com/brainscape-prod/system/cm/624/838/681/q_image_ios.?1756
 Paciente de 74 anos, sexo feminino. A tomografia computadorizada demonstrada a seguir apresenta sinal do favolamento exuberante. Os sinais de faveolamento exuberante, da margem reta ou “borda reta”, da região anterior do lobo superior “sinal do lobo superior anterior” e dos quatro cantos apresentam alta especificidade para qual doença ou grupo de doenças? 
 
 A) Fibrose Pulmonar Idiopática. 
-B) Pneumonia Interstiical Não Específica. 
+B) Pneumonia Intersticial Não Específica. 
 C) Doenças do Tecido Conjuntivo. 
 D) Pnuemonites Medicamentosas. 
 E) Pneumonite por Hiperssensibilidade.
