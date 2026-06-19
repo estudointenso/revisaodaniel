@@ -110,7 +110,7 @@
       text-align: center;
       gap: 20px;
     }
-    #loading-screen.active { display: flex; }
+    #loading-screen.active { display: flex !important; }
 
     .loading-spinner-big {
       width: 60px; height: 60px;
@@ -681,7 +681,7 @@
   <div class="container">
 
     <!-- ===== TELA DE LOADING INICIAL ===== -->
-    <div id="loading-screen" class="screen" style="background:#1a1a1a; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:20px; text-align:center;">
+    <div id="loading-screen" class="screen active" style="background:#1a1a1a; min-height:100vh; flex-direction:column; justify-content:center; align-items:center; gap:20px; text-align:center;">
       <div class="loading-spinner-big"></div>
       <p id="loading-msg" style="color:#aaa; font-size:16px;">Verificando login...</p>
     </div>
@@ -957,35 +957,35 @@ function showSaveToast(msg = '💾 Salvando...') {
 // ==========================================
 // FIREBASE AUTH — login / logout
 // ==========================================
+// ── igual ao RevisaoDaniel ──
 window.fazerLogin = async function() {
   try {
     const result = await signInWithPopup(auth, provider);
-    const user   = result.user;
-
-    // Verifica se email está autorizado (igual ao RevisaoDaniel)
+    const user = result.user;
     const emailDoc = await getDoc(doc(db, 'authorized_emails', user.email));
     if (!emailDoc.exists() || !emailDoc.data().authorized) {
-      await auth.signOut();
+      await signOut(auth);
       mostrarTela('login-screen');
-      showAlert(`🔒 Acesso negado.\n\nO e-mail "${user.email}" não tem permissão para acessar este jogo.`);
+      showAlert(`🔒 Acesso negado.\n\nO e-mail "${user.email}" não tem permissão.`);
       return;
     }
+  } catch (e) { showAlert('Erro ao fazer login. Tente novamente.'); }
+};
 
-    currentUser = user;
+window.fazerLogout = async function() { await signOut(auth); mostrarTela('login-screen'); };
+
+// ── onAuthStateChanged igual ao RevisaoDaniel ──
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const emailDoc = await getDoc(doc(db, 'authorized_emails', user.email));
+    if (!emailDoc.exists() || !emailDoc.data().authorized) {
+      await signOut(auth); mostrarTela('login-screen'); return;
+    }
     await initGame();
-  } catch (e) {
-    console.error('Erro login:', e);
-    showAlert('Erro ao fazer login. Tente novamente.');
-  }
-}
-
-function logout() {
-  if (!confirm('Deseja sair? Seu progresso está salvo na nuvem.')) return;
-  auth.signOut().then(() => {
-    currentUser = null;
+  } else {
     mostrarTela('login-screen');
-  }).catch(e => { showAlert('Erro ao sair. Tente novamente.'); });
-}
+  }
+});
 
 // ==========================================
 // FIRESTORE — SAVE / LOAD
