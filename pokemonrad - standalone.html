@@ -501,13 +501,6 @@
       min-height: 30px;
     }
 
-    /* ✅ Adiciona espaço no topo da tela starter no mobile */
-    @media (max-width: 600px) {
-      #starter-screen {
-        padding-top: 50px; /* Cria espaço para o botão */
-      }
-    }
-
     .btn-reset:active {
       background: #ff0000;
     }
@@ -4328,14 +4321,6 @@
     }
 
     function backToMap() {
-      saveGame();
-      document.querySelector('.container').scrollTo({ top: 0, behavior: 'auto' });
-      const trainingMessage = document.getElementById('training-message');
-      if (trainingMessage) {
-        trainingMessage.innerHTML = 'Responda corretamente para atacar o Pokemon selvagem!';
-        trainingMessage.style.background = 'rgba(0, 0, 0, 0.9)';
-      }
-      
       game.inBattle = false;
       game.currentGym = null;
       game.currentElite = null;
@@ -4343,6 +4328,14 @@
       game.trainingOpponent = null;
       currentTrainingQuestion = null;
       currentBattleQuestion = null;
+
+      saveGame();
+      document.querySelector('.container').scrollTo({ top: 0, behavior: 'auto' });
+      const trainingMessage = document.getElementById('training-message');
+      if (trainingMessage) {
+        trainingMessage.innerHTML = 'Responda corretamente para atacar o Pokemon selvagem!';
+        trainingMessage.style.background = 'rgba(0, 0, 0, 0.9)';
+      }
       
       showScreen('map-screen');
       audioSystem.play('map-music');
