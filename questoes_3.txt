@@ -11060,3 +11060,5 @@ B) Brônquio lobar superior direito.
 C) Brônquio intermediário.
 D) Brônquio lobar médio.
 E) Brônquio lobar inferior direito.
+
+GABARITO: C
