@@ -2616,12 +2616,28 @@
 
     async function loadQuestions() {
       try {
-        const response = await fetch('https://estudointenso.github.io/revisaodaniel/questoes.txt');
-        const text = await response.text();
-        questionsBank = parseQuestions(text);
+        const arquivos = [
+          'questoes_1.txt',
+          'questoes_2.txt',
+          'questoes_3.txt',
+          'questoes_4.txt',
+          'questoes_5.txt',
+          'questoes_6.txt',
+          'questoes_7.txt',
+        ];
+
+        const responses = await Promise.all(
+          arquivos.map(f => 
+            fetch(`https://estudointenso.github.io/revisaodaniel/${f}`)
+              .then(r => r.text())
+          )
+        );
+
+        const textoCompleto = responses.join('\n');
+        questionsBank = parseQuestions(textoCompleto);
         console.log(`✅ ${questionsBank.length} questões carregadas`);
       } catch (error) {
-        console.error('Erro ao carregar questões:', error);
+        console.error('Erro:', error.message);
         questionsBank = [];
       }
     }
